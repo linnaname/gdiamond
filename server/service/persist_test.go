@@ -1,0 +1,123 @@
+package service
+
+import (
+	"crypto/md5"
+	"fmt"
+	"gdiamond/server/common"
+	"gdiamond/server/model"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
+	"testing"
+)
+
+type _Suite struct {
+	suite.Suite
+}
+
+func (s *_Suite) SetupSuite() {
+	fmt.Printf("SetupSuite() ...\n")
+	common.InitConfig()
+	common.InitDBConn()
+}
+
+func (s *_Suite) TearDownSuite() {
+	common.CloseConn()
+}
+
+func (s *_Suite) TestAddCofingInfo() {
+	configInfo := &model.ConfigInfo{Group: "AAA_GROUP", DataId: "linna.com", Content: "song for linana", MD5: fmt.Sprintf("%x", md5.Sum([]byte("song for linana")))}
+	err := AddCofingInfo(configInfo)
+	assert.NoError(s.T(), err)
+}
+
+func (s *_Suite) TestUpdateConfigInfo() {
+	configInfo := &model.ConfigInfo{Group: "DEFAULT_GROUP", DataId: "linname", Content: "I hate linnana too", MD5: fmt.Sprintf("%x", md5.Sum([]byte("I hate linnana too")))}
+	err := UpdateConfigInfo(configInfo)
+	assert.NoError(s.T(), err)
+}
+
+func (s *_Suite) TestFindConfigInfo() {
+	configInfo, err := FindConfigInfo("linname", "DEFAULT_GROUP")
+	assert.NoError(s.T(), err)
+	assert.NotNil(s.T(), configInfo)
+	assert.Equal(s.T(), configInfo.Content, "I hate linnana too")
+	assert.Equal(s.T(), configInfo.Group, "DEFAULT_GROUP")
+	assert.Equal(s.T(), configInfo.MD5, "8d089c6892a42c2d1786f40ed8063850")
+}
+
+func (s *_Suite) TestFindConfigInfoById() {
+	configInfo, err := FindConfigInfoById(3)
+	assert.NoError(s.T(), err)
+	assert.NotNil(s.T(), configInfo)
+	assert.Equal(s.T(), configInfo.DataId, "linna")
+	assert.Equal(s.T(), configInfo.ID, int64(3))
+	assert.Equal(s.T(), configInfo.Content, "song for linana")
+	assert.Equal(s.T(), configInfo.Group, "DEFAULT_GROUP")
+	assert.Equal(s.T(), configInfo.MD5, "6f6e0326c63ed62c709d874f7093f6e1")
+}
+
+func (s *_Suite) TestFindConfigInfoByDataId() {
+	page, err := FindConfigInfoByDataId(1, 1, "linna.com")
+	assert.NoError(s.T(), err)
+	assert.NotNil(s.T(), page)
+	assert.Equal(s.T(), page.TotalCount, 2)
+	assert.Equal(s.T(), page.PageAvailable, 2)
+	assert.Equal(s.T(), page.PageNO, 1)
+	assert.Len(s.T(), page.PageItems, 1)
+	configInfo, ok := page.PageItems[0].(*model.ConfigInfo)
+	assert.True(s.T(), ok)
+	assert.Equal(s.T(), configInfo.Content, "song for linana")
+}
+
+func (s *_Suite) TestFindAllConfigInfo() {
+	page, err := FindAllConfigInfo(1, 10)
+	assert.NoError(s.T(), err)
+	assert.NotNil(s.T(), page)
+	assert.Equal(s.T(), page.TotalCount, 4)
+	assert.Equal(s.T(), page.PageAvailable, 1)
+	assert.Equal(s.T(), page.PageNO, 1)
+	assert.Len(s.T(), page.PageItems, 4)
+	configInfo, ok := page.PageItems[0].(*model.ConfigInfo)
+	assert.True(s.T(), ok)
+	assert.Equal(s.T(), configInfo.Content, "I hate linnana too")
+}
+
+func (s *_Suite) TestFindAllConfigLikeGroup() {
+	page, err := FindAllConfigLike(1, 10, "", "DEFAULT")
+	assert.NoError(s.T(), err)
+	assert.NotNil(s.T(), page)
+	assert.Equal(s.T(), page.TotalCount, 3)
+	assert.Equal(s.T(), page.PageAvailable, 1)
+	assert.Equal(s.T(), page.PageNO, 1)
+	assert.Len(s.T(), page.PageItems, 3)
+}
+
+func (s *_Suite) TestFindAllConfigLikeDataId() {
+	page, err := FindAllConfigLike(1, 10, "com", "")
+	assert.NoError(s.T(), err)
+	assert.NotNil(s.T(), page)
+	assert.Equal(s.T(), page.TotalCount, 2)
+	assert.Equal(s.T(), page.PageAvailable, 1)
+	assert.Equal(s.T(), page.PageNO, 1)
+	assert.Len(s.T(), page.PageItems, 2)
+}
+
+func (s *_Suite) TestFindAllConfigLikeGroupAndDataId() {
+	page, err := FindAllConfigLike(1, 10, "com", "AAA")
+	assert.NoError(s.T(), err)
+	assert.NotNil(s.T(), page)
+	assert.Equal(s.T(), page.TotalCount, 1)
+	assert.Equal(s.T(), page.PageAvailable, 1)
+	assert.Equal(s.T(), page.PageNO, 1)
+	assert.Len(s.T(), page.PageItems, page.TotalCount)
+}
+
+func (s *_Suite) TestRemoveConfigInfo() {
+	configInfo := &model.ConfigInfo{Group: "AAA_GROUP", DataId: "linna.com", Content: "song for linana", MD5: fmt.Sprintf("%x", md5.Sum([]byte("song for linana")))}
+	err := RemoveConfigInfo(configInfo)
+	assert.NoError(s.T(), err)
+}
+
+func TestSuite(t *testing.T) {
+	suite.Run(t, new(_Suite))
+}

@@ -1,22 +1,19 @@
 package common
 
 import (
+	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/jinzhu/gorm"
 )
 
-var GDBConn *gorm.DB
+var GDBConn *sql.DB
 
 func openDBConn(dbUrl string, maxIdleConns, maxOpenConns int) (err error) {
-	if GDBConn, err = gorm.Open("mysql", dbUrl); err != nil {
+	if GDBConn, err = sql.Open("mysql", dbUrl); err != nil {
 		return err
 	}
 	//Configuring sql.DB for Better Performance:https://www.alexedwards.net/blog/configuring-sqldb
-	GDBConn.DB().SetMaxIdleConns(maxIdleConns)
-	GDBConn.DB().SetMaxOpenConns(maxOpenConns)
-
-	GDBConn.LogMode(true)
-	GDBConn.SingularTable(true)
+	GDBConn.SetMaxIdleConns(maxIdleConns)
+	GDBConn.SetMaxOpenConns(maxOpenConns)
 
 	return nil
 }
@@ -30,4 +27,10 @@ func InitDBConn() error {
 		return err
 	}
 	return nil
+}
+
+func CloseConn() {
+	if GDBConn != nil {
+		GDBConn.Close()
+	}
 }
