@@ -24,20 +24,20 @@ func (s *_Suite) TearDownSuite() {
 	common.CloseConn()
 }
 
-func (s *_Suite) TestAddCofingInfo() {
+func (s *_Suite) TestAddConfingInfo() {
 	configInfo := &model.ConfigInfo{Group: "AAA_GROUP", DataId: "linna.com", Content: "song for linana", MD5: fmt.Sprintf("%x", md5.Sum([]byte("song for linana")))}
-	err := AddCofingInfo(configInfo)
+	err := addConfingInfo(configInfo)
 	assert.NoError(s.T(), err)
 }
 
 func (s *_Suite) TestUpdateConfigInfo() {
 	configInfo := &model.ConfigInfo{Group: "DEFAULT_GROUP", DataId: "linname", Content: "I hate linnana too", MD5: fmt.Sprintf("%x", md5.Sum([]byte("I hate linnana too")))}
-	err := UpdateConfigInfo(configInfo)
+	err := updateConfigInfo(configInfo)
 	assert.NoError(s.T(), err)
 }
 
 func (s *_Suite) TestFindConfigInfo() {
-	configInfo, err := FindConfigInfo("linname", "DEFAULT_GROUP")
+	configInfo, err := findConfigInfo("linname", "DEFAULT_GROUP")
 	assert.NoError(s.T(), err)
 	assert.NotNil(s.T(), configInfo)
 	assert.Equal(s.T(), configInfo.Content, "I hate linnana too")
@@ -46,7 +46,7 @@ func (s *_Suite) TestFindConfigInfo() {
 }
 
 func (s *_Suite) TestFindConfigInfoById() {
-	configInfo, err := FindConfigInfoById(3)
+	configInfo, err := findConfigInfoById(3)
 	assert.NoError(s.T(), err)
 	assert.NotNil(s.T(), configInfo)
 	assert.Equal(s.T(), configInfo.DataId, "linna")
@@ -57,7 +57,7 @@ func (s *_Suite) TestFindConfigInfoById() {
 }
 
 func (s *_Suite) TestFindConfigInfoByDataId() {
-	page, err := FindConfigInfoByDataId(1, 1, "linna.com")
+	page, err := findConfigInfoByDataId(1, 1, "linna.com")
 	assert.NoError(s.T(), err)
 	assert.NotNil(s.T(), page)
 	assert.Equal(s.T(), page.TotalCount, 2)
@@ -70,7 +70,7 @@ func (s *_Suite) TestFindConfigInfoByDataId() {
 }
 
 func (s *_Suite) TestFindAllConfigInfo() {
-	page, err := FindAllConfigInfo(1, 10)
+	page, err := findAllConfigInfo(1, 10)
 	assert.NoError(s.T(), err)
 	assert.NotNil(s.T(), page)
 	assert.Equal(s.T(), page.TotalCount, 4)
@@ -83,7 +83,7 @@ func (s *_Suite) TestFindAllConfigInfo() {
 }
 
 func (s *_Suite) TestFindAllConfigLikeGroup() {
-	page, err := FindAllConfigLike(1, 10, "", "DEFAULT")
+	page, err := findAllConfigLike(1, 10, "", "DEFAULT")
 	assert.NoError(s.T(), err)
 	assert.NotNil(s.T(), page)
 	assert.Equal(s.T(), page.TotalCount, 3)
@@ -93,7 +93,7 @@ func (s *_Suite) TestFindAllConfigLikeGroup() {
 }
 
 func (s *_Suite) TestFindAllConfigLikeDataId() {
-	page, err := FindAllConfigLike(1, 10, "com", "")
+	page, err := findAllConfigLike(1, 10, "com", "")
 	assert.NoError(s.T(), err)
 	assert.NotNil(s.T(), page)
 	assert.Equal(s.T(), page.TotalCount, 2)
@@ -103,7 +103,7 @@ func (s *_Suite) TestFindAllConfigLikeDataId() {
 }
 
 func (s *_Suite) TestFindAllConfigLikeGroupAndDataId() {
-	page, err := FindAllConfigLike(1, 10, "com", "AAA")
+	page, err := findAllConfigLike(1, 10, "com", "AAA")
 	assert.NoError(s.T(), err)
 	assert.NotNil(s.T(), page)
 	assert.Equal(s.T(), page.TotalCount, 1)
@@ -114,7 +114,7 @@ func (s *_Suite) TestFindAllConfigLikeGroupAndDataId() {
 
 func (s *_Suite) TestRemoveConfigInfo() {
 	configInfo := &model.ConfigInfo{Group: "AAA_GROUP", DataId: "linna.com", Content: "song for linana", MD5: fmt.Sprintf("%x", md5.Sum([]byte("song for linana")))}
-	err := RemoveConfigInfo(configInfo)
+	err := removeConfigInfo(configInfo)
 	assert.NoError(s.T(), err)
 }
 

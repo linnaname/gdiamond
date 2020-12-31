@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func AddCofingInfo(config *model.ConfigInfo) error {
+func addConfingInfo(config *model.ConfigInfo) error {
 	stm, err := common.GDBConn.Prepare("INSERT INTO config_info (data_id,group_id,content,md5,gmt_create,gmt_modified) VALUES(?,?,?,?,?,?)")
 	if err != nil {
 		return err
@@ -21,7 +21,7 @@ func AddCofingInfo(config *model.ConfigInfo) error {
 	return nil
 }
 
-func UpdateConfigInfo(config *model.ConfigInfo) error {
+func updateConfigInfo(config *model.ConfigInfo) error {
 	stm, err := common.GDBConn.Prepare("UPDATE config_info SET content=?,md5=?,gmt_modified=? WHERE data_id=? AND group_id=?")
 	if err != nil {
 		return err
@@ -34,7 +34,7 @@ func UpdateConfigInfo(config *model.ConfigInfo) error {
 	return nil
 }
 
-func FindConfigInfo(dataId, group string) (*model.ConfigInfo, error) {
+func findConfigInfo(dataId, group string) (*model.ConfigInfo, error) {
 	stm, err := common.GDBConn.Prepare("select id,data_id,group_id,content,md5 from config_info where data_id=? and group_id=?")
 	if err != nil {
 		return nil, err
@@ -47,7 +47,7 @@ func FindConfigInfo(dataId, group string) (*model.ConfigInfo, error) {
 	return configInfo, nil
 }
 
-func FindConfigInfoById(id int64) (*model.ConfigInfo, error) {
+func findConfigInfoById(id int64) (*model.ConfigInfo, error) {
 	stm, err := common.GDBConn.Prepare("select id,data_id,group_id,content,md5 from config_info where id=?")
 	if err != nil {
 		return nil, err
@@ -60,7 +60,7 @@ func FindConfigInfoById(id int64) (*model.ConfigInfo, error) {
 	return configInfo, nil
 }
 
-func FindConfigInfoByDataId(pageNo, pageSize int, dataId string) (*model.Page, error) {
+func findConfigInfoByDataId(pageNo, pageSize int, dataId string) (*model.Page, error) {
 	page, err := common.FetchPage("select count(id) from config_info where data_id=?",
 		"select id,data_id,group_id,content,md5 from config_info where data_id=?",
 		pageNo, pageSize, dataId)
@@ -70,7 +70,7 @@ func FindConfigInfoByDataId(pageNo, pageSize int, dataId string) (*model.Page, e
 	return page, nil
 }
 
-func FindConfigInfoByGroup(pageNo, pageSize int, group string) (*model.Page, error) {
+func findConfigInfoByGroup(pageNo, pageSize int, group string) (*model.Page, error) {
 	page, err := common.FetchPage("select count(id) from config_info where group_id=?",
 		"select id,data_id,group_id,content,md5 from config_info where group_id=?",
 		pageNo, pageSize, group)
@@ -80,7 +80,7 @@ func FindConfigInfoByGroup(pageNo, pageSize int, group string) (*model.Page, err
 	return page, nil
 }
 
-func FindAllConfigInfo(pageNo, pageSize int) (*model.Page, error) {
+func findAllConfigInfo(pageNo, pageSize int) (*model.Page, error) {
 	page, err := common.FetchPage("select count(id) from config_info",
 		"select id,data_id,group_id,content,md5 from config_info order by id ",
 		pageNo, pageSize)
@@ -90,9 +90,9 @@ func FindAllConfigInfo(pageNo, pageSize int) (*model.Page, error) {
 	return page, nil
 }
 
-func FindAllConfigLike(pageNo, pageSize int, dataId, group string) (*model.Page, error) {
+func findAllConfigLike(pageNo, pageSize int, dataId, group string) (*model.Page, error) {
 	if dataId == "" && group == "" {
-		return FindAllConfigInfo(pageNo, pageSize)
+		return findAllConfigInfo(pageNo, pageSize)
 	}
 
 	sqlCountRows := "select count(id) from config_info where "
@@ -123,7 +123,7 @@ func FindAllConfigLike(pageNo, pageSize int, dataId, group string) (*model.Page,
 	return nil, errors.New("don't know how to do")
 }
 
-func RemoveConfigInfo(config *model.ConfigInfo) error {
+func removeConfigInfo(config *model.ConfigInfo) error {
 	stm, err := common.GDBConn.Prepare("DELETE FROM config_info WHERE data_id=? AND group_id=?")
 	if err != nil {
 		return err

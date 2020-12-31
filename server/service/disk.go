@@ -64,6 +64,25 @@ func SaveToDisk(info *model.ConfigInfo) error {
 	}
 }
 
+func RemoveConfigInfoFromDisk(dataId, group string) error {
+	cacheKey := generateCacheKey(group, dataId)
+	_, loaded := modifyMarkCache.LoadOrStore(cacheKey, true)
+	if !loaded {
+		groupPath := getFilePath(BASE_DIR + "/" + group)
+		if _, err := os.Stat(groupPath); !os.IsNotExist(err) {
+			return nil
+		}
+		dataPath := getFilePath(BASE_DIR + "/" + group + "/" + dataId)
+		if _, err := os.Stat(dataPath); !os.IsNotExist(err) {
+			return nil
+		}
+		err := os.Remove(dataPath)
+		return err
+	}
+	modifyMarkCache.Delete(cacheKey)
+	return nil
+}
+
 func IsModified(dataId, group string) bool {
 	v, ok := modifyMarkCache.Load(generateCacheKey(group, dataId))
 	if !ok {

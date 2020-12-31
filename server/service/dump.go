@@ -14,7 +14,7 @@ func Init() {
 		defer ticker.Stop()
 		for {
 			<-ticker.C
-			page, err := FindAllConfigInfo(1, PAGE_SIZE)
+			page, err := findAllConfigInfo(1, PAGE_SIZE)
 			if err != nil {
 				log.Println("errs:", err)
 				continue
@@ -25,7 +25,7 @@ func Init() {
 				updateConfigInfo2CacheAndDisk(page)
 				if totalPages > 1 {
 					for pageNo := 2; pageNo <= totalPages; pageNo++ {
-						page, err := FindAllConfigInfo(pageNo, PAGE_SIZE)
+						page, err := findAllConfigInfo(pageNo, PAGE_SIZE)
 						if err != nil {
 							log.Println("errs:", err)
 							continue
