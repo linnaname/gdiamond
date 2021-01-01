@@ -1,8 +1,9 @@
-package common
+package service
 
 import (
 	"errors"
 	"fmt"
+	"gdiamond/server/common"
 	"gdiamond/server/model"
 )
 
@@ -11,7 +12,7 @@ func FetchPage(sqlCountRows, sqlFetchRows string, pageNo, pageSize int, args ...
 		return nil, errors.New("pageSize can't greater than 0")
 	}
 
-	stm, err := GDBConn.Prepare(sqlCountRows)
+	stm, err := common.GDBConn.Prepare(sqlCountRows)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +33,7 @@ func FetchPage(sqlCountRows, sqlFetchRows string, pageNo, pageSize int, args ...
 
 	startRow := (pageNo - 1) * pageSize
 	selectSQL := fmt.Sprintf("%v limit %v , %v", sqlFetchRows, startRow, pageSize)
-	sstm, err := GDBConn.Prepare(selectSQL)
+	sstm, err := common.GDBConn.Prepare(selectSQL)
 	if err != nil {
 		return nil, err
 	}

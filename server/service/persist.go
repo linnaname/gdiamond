@@ -61,7 +61,7 @@ func findConfigInfoById(id int64) (*model.ConfigInfo, error) {
 }
 
 func findConfigInfoByDataId(pageNo, pageSize int, dataId string) (*model.Page, error) {
-	page, err := common.FetchPage("select count(id) from config_info where data_id=?",
+	page, err := FetchPage("select count(id) from config_info where data_id=?",
 		"select id,data_id,group_id,content,md5 from config_info where data_id=?",
 		pageNo, pageSize, dataId)
 	if err != nil {
@@ -71,7 +71,7 @@ func findConfigInfoByDataId(pageNo, pageSize int, dataId string) (*model.Page, e
 }
 
 func findConfigInfoByGroup(pageNo, pageSize int, group string) (*model.Page, error) {
-	page, err := common.FetchPage("select count(id) from config_info where group_id=?",
+	page, err := FetchPage("select count(id) from config_info where group_id=?",
 		"select id,data_id,group_id,content,md5 from config_info where group_id=?",
 		pageNo, pageSize, group)
 	if err != nil {
@@ -81,7 +81,7 @@ func findConfigInfoByGroup(pageNo, pageSize int, group string) (*model.Page, err
 }
 
 func findAllConfigInfo(pageNo, pageSize int) (*model.Page, error) {
-	page, err := common.FetchPage("select count(id) from config_info",
+	page, err := FetchPage("select count(id) from config_info",
 		"select id,data_id,group_id,content,md5 from config_info order by id ",
 		pageNo, pageSize)
 	if err != nil {
@@ -114,11 +114,11 @@ func findAllConfigLike(pageNo, pageSize int, dataId, group string) (*model.Page,
 	}
 
 	if dataId != "" && group != "" {
-		return common.FetchPage(sqlCountRows, sqlFetchRows, pageNo, pageSize, generateLikeArgument(dataId), generateLikeArgument(group))
+		return FetchPage(sqlCountRows, sqlFetchRows, pageNo, pageSize, generateLikeArgument(dataId), generateLikeArgument(group))
 	} else if dataId != "" {
-		return common.FetchPage(sqlCountRows, sqlFetchRows, pageNo, pageSize, generateLikeArgument(dataId))
+		return FetchPage(sqlCountRows, sqlFetchRows, pageNo, pageSize, generateLikeArgument(dataId))
 	} else if group != "" {
-		return common.FetchPage(sqlCountRows, sqlFetchRows, pageNo, pageSize, generateLikeArgument(group))
+		return FetchPage(sqlCountRows, sqlFetchRows, pageNo, pageSize, generateLikeArgument(group))
 	}
 	return nil, errors.New("don't know how to do")
 }

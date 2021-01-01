@@ -9,7 +9,7 @@ import (
 const PAGE_SIZE = 1000
 
 func Init() {
-	ticker := time.NewTicker(time.Second * 30)
+	ticker := time.NewTicker(time.Minute * 2)
 	go func() {
 		defer ticker.Stop()
 		for {

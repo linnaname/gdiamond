@@ -13,7 +13,7 @@ type MySQLConfig struct {
 	MaxOpenConns int    `json:"maxOpenConns"`
 }
 
-const CONFIG_PATH = "../etc/etc.json"
+const CONFIG_PATH = "/Users/goranka/linnana/go/gdiamond/server/etc/etc.json"
 
 /**
 read mysql connect config from local file
