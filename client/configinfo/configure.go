@@ -52,6 +52,17 @@ func (c *Configure) GetReceiveWaitTime() int {
 }
 
 /**
+ * 获取轮询的间隔时间。单位：秒<br>
+ * 此间隔时间代表轮询查找一次配置信息的间隔时间，对于容灾相关，请设置短一些；<br>
+ * 对于其他不可变的配置信息，请设置长一些
+ *
+ * @return
+ */
+func (c *Configure) GetPollingIntervalTime() int {
+	return pollingIntervalTime
+}
+
+/**
  * 获取当前支持的所有的DiamondServer域名列表
  *
  * @return

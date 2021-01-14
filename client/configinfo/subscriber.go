@@ -1,3 +1,7 @@
+/**
+TODO http连接复用，精细参数设置
+*/
+
 package configinfo
 
 import (
@@ -23,15 +27,17 @@ const (
 )
 
 var isRun = false
+
 var cache sync.Map
 
 type Subscriber struct {
 	domainNamePos    int64
 	diamondConfigure *Configure
+	bFirstCheck      bool
 }
 
 func New() (*Subscriber, error) {
-	s := &Subscriber{}
+	s := &Subscriber{bFirstCheck: true}
 	s.diamondConfigure, _ = NewConfigure()
 	return s, nil
 }
@@ -76,7 +82,57 @@ func (s *Subscriber) checkDiamondServerConfigInfo() error {
 *
  */
 func (s *Subscriber) receiveConfigInfo(cacheData *CacheData) {
+	duration := 60
+	if !s.bFirstCheck {
+		duration = s.diamondConfigure.GetPollingIntervalTime()
+	}
 
+	ticker := time.NewTicker(time.Second * time.Duration(duration))
+	go func() {
+		defer ticker.Stop()
+		for {
+			<-ticker.C
+
+			if !isRun {
+				log.Println("DiamondSubscriber不在运行状态中，退出查询循环")
+				continue
+			}
+
+		}
+	}()
+	s.bFirstCheck = false
+}
+
+func checkLocalConfigInfo() {
+	cache.Range(func(key, value interface{}) bool {
+		if value == nil {
+			return true
+		}
+		groupCache, ok := value.(sync.Map)
+		if !ok {
+			return true
+		}
+		groupCache.Range(func(key, value interface{}) bool {
+			if value == nil {
+				return true
+			}
+			data, ok := value.(CacheData)
+			if !ok {
+				return true
+			}
+			GetLocalConfigureInfomation(&data)
+			return true
+		})
+		return true
+	})
+}
+
+func GetLocalConfigureInfomation(cacheData *CacheData) error {
+	if !isRun {
+		errors.New("DiamondSubscriber不在运行状态中，无法获取本地ConfigureInfomation")
+	}
+	//TODO
+	return nil
 }
 
 func (s *Subscriber) checkUpdateDataIds(timeout int) (*hashset.Set, error) {
