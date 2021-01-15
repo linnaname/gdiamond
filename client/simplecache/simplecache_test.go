@@ -8,18 +8,18 @@ import (
 
 func TestSimpleCache(t *testing.T) {
 	cache := New(10)
-	value := cache.get("test")
+	value := cache.Get("test")
 	assert.Nil(t, value)
-	cache.put("test", "val")
-	assert.NotNil(t, cache.get("test"))
+	cache.Put("test", "val")
+	assert.NotNil(t, cache.Get("test"))
 }
 
 func TestSimpleCacheTime(t *testing.T) {
 	cache := New(10)
-	value := cache.get("test")
+	value := cache.Get("test")
 	assert.Nil(t, value)
-	cache.put("test", "val")
-	assert.NotNil(t, cache.get("test"))
+	cache.Put("test", "val")
+	assert.NotNil(t, cache.Get("test"))
 	time.Sleep(time.Second * 12)
-	assert.Nil(t, cache.get("test"))
+	assert.Nil(t, cache.Get("test"))
 }

@@ -20,7 +20,7 @@ func New(cacheTTL int64) *SimpleCache {
 	return cache
 }
 
-func (s *SimpleCache) put(key string, e interface{}) {
+func (s *SimpleCache) Put(key string, e interface{}) {
 	if key == "" || e == nil {
 		return
 	}
@@ -28,7 +28,7 @@ func (s *SimpleCache) put(key string, e interface{}) {
 	s.cache.Store(key, entry)
 }
 
-func (s *SimpleCache) get(key string) interface{} {
+func (s *SimpleCache) Get(key string) interface{} {
 	var result interface{}
 	value, ok := s.cache.Load(key)
 	if ok && value != nil {
