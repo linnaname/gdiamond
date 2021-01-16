@@ -1,9 +1,16 @@
 package fileutil
 
-import "os"
+import (
+	"errors"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+)
 
 /**
-目录不存在则创建
+CreateDirIfNessary create directory if not exist,pay attention to fix permission and
+it will create any necessary parents
+If path is already a exist, it does nothing and returns nil.
 */
 func CreateDirIfNessary(path string) error {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
@@ -27,4 +34,50 @@ func CreateFileIfNessary(filepath string) (*os.File, error) {
 		return file, err
 	}
 	return file, err
+}
+
+/**
+GetFileContent get all file content once
+*/
+func GetFileContent(filePath string) (string, error) {
+	finfo, _ := os.Stat(filePath)
+	if finfo.IsDir() {
+		return "", errors.New("Not file")
+	}
+	f, err := os.Open(filePath)
+	if err != nil {
+		return "", errors.New("Can't open file")
+	}
+	content, err := ioutil.ReadAll(f)
+	if err != nil {
+		return "", errors.New("Can't read file")
+	}
+	return string(content), nil
+}
+
+/**
+GetGrandpaDir get grandpa dir of given filepath
+path must be file path not dir
+return  grandpa dir path,if there no grandpa it will return empty string and error
+*/
+func GetGrandpaDir(path string) (string, error) {
+	if isDir(path) {
+		return "", errors.New("not valid file")
+	}
+	parentPath := filepath.Dir(path)
+	if isDir(parentPath) {
+		grandpaPath := filepath.Dir(parentPath)
+		if isDir(grandpaPath) {
+			return grandpaPath, nil
+		} else {
+			return "", errors.New("grandpa path not dir")
+		}
+	} else {
+		return "", errors.New("parent path not dir")
+	}
+}
+
+func isDir(path string) bool {
+	finfo, _ := os.Stat(path)
+	return finfo.IsDir()
 }
