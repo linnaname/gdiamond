@@ -5,23 +5,45 @@ import (
 	"testing"
 )
 
+const (
+	TEST_DIR  = "test"
+	TEST_FILE = "test.file"
+)
+
+func TestCreateDirIfNessary(t *testing.T) {
+	err := CreateDirIfNessary(TEST_DIR)
+	assert.NoError(t, err)
+}
+
+func TestIsDir(t *testing.T) {
+	assert.True(t, IsDir(TEST_DIR))
+}
+
 func TestIsExist(t *testing.T) {
-	b := IsExist("/Users/goranka/tmp/test/test.group")
+	b := IsExist(TEST_DIR)
 	assert.True(t, b)
 }
 
+func TestCreateFileIfNessary(t *testing.T) {
+	f, err := CreateFileIfNessary(TEST_FILE)
+	assert.NoError(t, err)
+	assert.NotNil(t, f)
+	assert.True(t, IsExist(f.Name()))
+	assert.False(t, IsDir(f.Name()))
+}
+
 func TestGetFileContent(t *testing.T) {
-	content, err := GetFileContent("/Users/goranka/tmp/test/e.dir/e.data")
+	content, err := GetFileContent(TEST_FILE)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, content)
 }
 
 func TestGetGrandpaDir(t *testing.T) {
-	g1, err := GetGrandpaDir("/Users/goranka/tmp/test/e.dir")
+	g1, err := GetGrandpaDir(TEST_DIR)
 	assert.Error(t, err)
 	assert.Empty(t, g1)
 
-	g2, err := GetGrandpaDir("/Users/goranka/tmp/test/e.dir/e.data")
+	g2, err := GetGrandpaDir(TEST_FILE)
 	assert.NoError(t, err)
-	assert.Equal(t, "/Users/goranka/tmp/test", g2)
+	assert.NotEmpty(t, g2)
 }

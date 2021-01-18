@@ -19,6 +19,7 @@ func CreateDirIfNessary(path string) error {
 	return nil
 }
 
+//IsExist if file or directory exist,don't care about err
 func IsExist(filepath string) bool {
 	_, err := os.Stat(filepath)
 	if os.IsExist(err) || err == nil {
@@ -27,6 +28,10 @@ func IsExist(filepath string) bool {
 	return false
 }
 
+/**
+CreateFileIfNessary create file if not exist,pay attention to fix permission
+If file is already a exist, it does nothing and returns nil.
+*/
 func CreateFileIfNessary(filepath string) (*os.File, error) {
 	file, err := os.OpenFile(filepath, os.O_TRUNC|os.O_WRONLY, os.ModePerm)
 	if err != nil && os.IsNotExist(err) {
@@ -56,19 +61,19 @@ func GetFileContent(filePath string) (string, error) {
 }
 
 /**
-GetGrandpaDir get grandpa dir of given filepath
+GetGrandpaDir get grandpa base dir of given filepath
 path must be file path not dir
 return  grandpa dir path,if there no grandpa it will return empty string and error
 */
 func GetGrandpaDir(path string) (string, error) {
-	if isDir(path) {
+	if IsDir(path) {
 		return "", errors.New("not valid file")
 	}
 	parentPath := filepath.Dir(path)
-	if isDir(parentPath) {
+	if IsDir(parentPath) {
 		grandpaPath := filepath.Dir(parentPath)
-		if isDir(grandpaPath) {
-			return grandpaPath, nil
+		if IsDir(grandpaPath) {
+			return filepath.Base(grandpaPath), nil
 		} else {
 			return "", errors.New("grandpa path not dir")
 		}
@@ -77,7 +82,8 @@ func GetGrandpaDir(path string) (string, error) {
 	}
 }
 
-func isDir(path string) bool {
+//IsDir if path is dir,don't care about err
+func IsDir(path string) bool {
 	finfo, _ := os.Stat(path)
 	return finfo.IsDir()
 }
