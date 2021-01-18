@@ -10,7 +10,7 @@ import (
 )
 
 type SnapshotConfigInfoProcessor struct {
-	dir string
+	dir string //snapshot data dir
 }
 
 func NewSnapshotConfigInfoProcessor(dir string) *SnapshotConfigInfoProcessor {
@@ -21,9 +21,8 @@ func NewSnapshotConfigInfoProcessor(dir string) *SnapshotConfigInfoProcessor {
 	return processor
 }
 
-/**
-从文件中读取snapshot
-*/
+//GetConfigInfomation read snapshot data from local file
+//if err return it come from ioutil.ReadFile
 func (p *SnapshotConfigInfoProcessor) GetConfigInfomation(dataId, group string) (string, error) {
 	if dataId == "" || group == "" {
 		return "", nil
@@ -45,9 +44,8 @@ func (p *SnapshotConfigInfoProcessor) GetConfigInfomation(dataId, group string) 
 	return string(buf), nil
 }
 
-/**
-保存snapshot
-*/
+//SaveSnaptshot save config data to snapshot local file
+//if dataId or group it will return err
 func (p *SnapshotConfigInfoProcessor) SaveSnaptshot(dataId, group, config string) error {
 	if dataId == "" {
 		errors.New("blank dataId")
@@ -71,9 +69,9 @@ func (p *SnapshotConfigInfoProcessor) SaveSnaptshot(dataId, group, config string
 	return nil
 }
 
-/**
- * 删除snapshot
- */
+/*
+RemoveSnapshot remove snapshot config local file,if the dir is empty it will remove the dir
+*/
 func (p *SnapshotConfigInfoProcessor) RemoveSnapshot(dataId, group string) {
 	if dataId == "" || group == "" {
 		return

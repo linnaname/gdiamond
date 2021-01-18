@@ -7,9 +7,10 @@ import (
 	"testing"
 )
 
-const SNAPSHOT_PATH = "/Users/goranka/tmp/test"
+const SNAPSHOT_PATH = "test"
 
 func TestSnapshotConfigInfoProcessor_SaveSnaptshot(t *testing.T) {
+	fileutil.CreateDirIfNessary(SNAPSHOT_PATH)
 	p := NewSnapshotConfigInfoProcessor(SNAPSHOT_PATH)
 	err := p.SaveSnaptshot("test.dataId", "test.group", "this is content")
 	assert.NoError(t, err)
