@@ -1,5 +1,4 @@
 /**
-
  */
 
 package filewatcher
@@ -11,7 +10,12 @@ import (
 	"path/filepath"
 )
 
+/**
+code from https://github.com/farmergreg/rfsnotify,  I need to change something about it so I copy it and make some difference
+*/
+
 type RWatcher struct {
+	//you can for select all events and errors
 	Events   chan fsnotify.Event
 	Errors   chan error
 	done     chan struct{}
@@ -53,7 +57,7 @@ func (rw *RWatcher) RemoveRecursive(name string) error {
 	return nil
 }
 
-// Close remove all watches and close the events channel
+// Close remove all watche and close the events channel
 func (rw *RWatcher) Close() error {
 	if rw.isClosed {
 		return nil

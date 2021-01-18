@@ -8,11 +8,15 @@ import (
 	"testing"
 )
 
+const (
+	TEST_DIR = "test"
+)
+
 func TestRWatcher(t *testing.T) {
 	rw, err := NewWatcher()
 	assert.NoError(t, err)
 	assert.NotNil(t, rw)
-	err = rw.AddRecursive("/Users/goranka/tmp/test")
+	err = rw.AddRecursive(TEST_DIR)
 	assert.NoError(t, err)
 
 	var wg sync.WaitGroup

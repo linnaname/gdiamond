@@ -1,10 +1,10 @@
 package urlutil
 
 import (
-	"fmt"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestGetUrl(t *testing.T) {
-	fmt.Println(GetUrl("www.linnana.me", 8081, "test"))
+	assert.Equal(t, GetUrl("www.linnana.me", 8081, "test"), "www.linnana.me:8081/test")
 }
