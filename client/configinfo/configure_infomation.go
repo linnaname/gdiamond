@@ -8,6 +8,11 @@ type ConfigureInfomation struct {
 	ConfigureInfo string
 }
 
+func NewConfigureInfomation() *ConfigureInfomation {
+	c := &ConfigureInfomation{}
+	return c
+}
+
 func (c *ConfigureInfomation) String() string {
 	builder := strings.Builder{}
 	builder.WriteString("DataId: ")

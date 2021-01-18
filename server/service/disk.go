@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"gdiamond/server/model"
+	"gdiamond/util/fileutil"
 	"io"
 	"io/ioutil"
 	"os"
@@ -23,7 +24,7 @@ func SaveToDisk(info *model.ConfigInfo) error {
 	_, loaded := modifyMarkCache.LoadOrStore(cacheKey, true)
 	if !loaded {
 		groupPath := getFilePath(BASE_DIR + "/" + group)
-		err := createDirIfNessary(groupPath)
+		err := fileutil.CreateDirIfNessary(groupPath)
 
 		if err != nil {
 			modifyMarkCache.Delete(cacheKey)
@@ -93,20 +94,13 @@ func IsModified(dataId, group string) bool {
 
 func clearCacheAndFile(tempFile *os.File, cacheKey string) {
 	modifyMarkCache.Delete(cacheKey)
-	deteTempFile(tempFile)
+	deleteTempFile(tempFile)
 }
 
-func deteTempFile(tempFile *os.File) {
+func deleteTempFile(tempFile *os.File) {
 	if _, err := os.Stat(tempFile.Name()); !os.IsNotExist(err) {
 		os.Remove(tempFile.Name())
 	}
-}
-
-func createDirIfNessary(path string) error {
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return os.MkdirAll(path, os.ModePerm)
-	}
-	return nil
 }
 
 func createFileIfNessary(parent, child string) (*os.File, error) {
