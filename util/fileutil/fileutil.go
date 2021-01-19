@@ -45,7 +45,10 @@ func CreateFileIfNessary(filepath string) (*os.File, error) {
 GetFileContent get all file content once
 */
 func GetFileContent(filePath string) (string, error) {
-	finfo, _ := os.Stat(filePath)
+	finfo, err := os.Stat(filePath)
+	if err != nil {
+		return "", err
+	}
 	if finfo.IsDir() {
 		return "", errors.New("Not file")
 	}

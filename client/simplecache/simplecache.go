@@ -5,29 +5,35 @@ import (
 	"time"
 )
 
+//simple cache with ttl
 type SimpleCache struct {
-	cacheTTL int64 //秒
-	cache    sync.Map
+	//ttl for whole cache,not for single key, time unit:second
+	ttl   int64
+	cache sync.Map
 }
 
 type CacheEntry struct {
+	//exipred timestamp
 	timestamp int64
 	value     interface{}
 }
 
-func New(cacheTTL int64) *SimpleCache {
-	cache := &SimpleCache{cacheTTL: cacheTTL}
+func New(ttl int64) *SimpleCache {
+	cache := &SimpleCache{ttl: ttl}
 	return cache
 }
 
+//Put put k,v to cache
 func (s *SimpleCache) Put(key string, e interface{}) {
 	if key == "" || e == nil {
 		return
 	}
-	entry := CacheEntry{timestamp: time.Now().Unix() + s.cacheTTL, value: e}
+	entry := CacheEntry{timestamp: time.Now().Unix() + s.ttl, value: e}
 	s.cache.Store(key, entry)
 }
 
+//Get get value of key
+//if not exist return nil interface
 func (s *SimpleCache) Get(key string) interface{} {
 	var result interface{}
 	value, ok := s.cache.Load(key)
