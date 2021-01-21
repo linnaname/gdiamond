@@ -23,9 +23,9 @@ import (
 )
 
 const (
-	DEFAULT_DOMAINNAME       = "a.b.c"
-	DAILY_DOMAINNAME         = "d.e.f"
-	CONFIG_HTTP_URI_FILE     = "/url" /** 获取ServerAddress的配置uri */
+	DEFAULT_DOMAINNAME       = "http://127.0.0.1"
+	DAILY_DOMAINNAME         = "http://127.0.0.1"
+	CONFIG_HTTP_URI_FILE     = "url" /** 获取ServerAddress的配置uri */
 	asynAcquireIntervalInSec = 300
 )
 
@@ -66,7 +66,7 @@ func (p *ServerAddressProcessor) Stop() {
 
 func (p *ServerAddressProcessor) acquireServerAddressFromLocal() error {
 	if !p.isRun {
-		errors.New("ServerAddressProcessor不在运行状态，无法同步获取服务器地址列表")
+		return errors.New("ServerAddressProcessor不在运行状态，无法同步获取服务器地址列表")
 	}
 	acquireCount := 0
 	if p.diamondConfigure.GetDomainNameList().Size() == 0 {
@@ -162,7 +162,11 @@ func (p *ServerAddressProcessor) acquireServerAddressOnce(acquireCount int) bool
 	onceTimeOut := p.diamondConfigure.GetOnceTimeout()
 	client := &http.Client{Timeout: time.Duration(onceTimeOut) * time.Millisecond}
 	apiUrl := urlutil.GetUrl(configServerAddress, port, CONFIG_HTTP_URI_FILE)
-	req, _ := http.NewRequest("GET", apiUrl, nil)
+	req, err := http.NewRequest("GET", apiUrl, nil)
+	if err != nil {
+		log.Println("NewRequest error", err)
+		return false
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("没有可用的新服务器列表", err)

@@ -16,12 +16,11 @@ type _SS struct {
 
 func (s *_SS) SetupSuite() {
 	fmt.Printf("SetupSuite() ...\n")
-	os.Setenv("user.home", "./")
+	os.Setenv("user.home", "/Users/goranka")
 	c, err := configinfo.NewConfigure()
 	assert.NoError(s.T(), err)
 	p := NewServerAddressProcessor(c)
 	s.p = p
-	s.p.Start()
 }
 
 func (s *_SS) TearDownSuite() {
@@ -39,5 +38,33 @@ func TestGenerateLocalFilePath(t *testing.T) {
 	println(path)
 }
 
-func (s *_SS) TestName() {
+func (s *_SS) TestAcquireServerAddressOnce() {
+	p := s.p
+	assert.True(s.T(), p.diamondConfigure.GetDomainNameList().Empty())
+	b := p.acquireServerAddressOnce(0)
+	assert.True(s.T(), b)
+	assert.False(s.T(), p.diamondConfigure.GetDomainNameList().Empty())
+	assert.Equal(s.T(), p.diamondConfigure.GetDomainNameList().Size(), 1)
+	ele, ok := p.diamondConfigure.GetDomainNameList().Get(0)
+	assert.True(s.T(), ok)
+	assert.Equal(s.T(), ele, "127.0.0.1")
+}
+
+func (s *_SS) TestStoreServerAddressesToLocal() {
+	p := s.p
+	b := p.acquireServerAddressOnce(0)
+	assert.True(s.T(), b)
+	p.storeServerAddressesToLocal()
+}
+
+func (s *_SS) TestReloadServerAddresses() {
+	p := s.p
+	assert.True(s.T(), p.diamondConfigure.GetDomainNameList().Empty())
+	p.reloadServerAddresses()
+	assert.False(s.T(), p.diamondConfigure.GetDomainNameList().Empty())
+}
+
+func (s *_SS) TestAcquireServerAddressFromLocal() {
+	p := s.p
+	p.acquireServerAddressFromLocal()
 }
