@@ -19,7 +19,7 @@ type A struct {
 }
 
 func (a A) ReceiveConfigInfo(configInfo string) {
-	println(configInfo)
+	println("ReceiveConfigInfo:", configInfo)
 }
 
 func TestNewManager(t *testing.T) {

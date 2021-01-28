@@ -23,8 +23,8 @@ import (
 )
 
 const (
-	DEFAULT_DOMAINNAME       = "http://127.0.0.1"
-	DAILY_DOMAINNAME         = "http://127.0.0.1"
+	DEFAULT_DOMAINNAME       = "127.0.0.1"
+	DAILY_DOMAINNAME         = "127.0.0.1"
 	CONFIG_HTTP_URI_FILE     = "url" /** 获取ServerAddress的配置uri */
 	asynAcquireIntervalInSec = 300
 )

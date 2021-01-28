@@ -6,5 +6,5 @@ import (
 )
 
 func TestGetUrl(t *testing.T) {
-	assert.Equal(t, GetUrl("www.linnana.me", 8081, "test"), "www.linnana.me:8081/test")
+	assert.Equal(t, GetUrl("www.linnana.me", 8081, "test"), "http://www.linnana.me:8081/test")
 }

@@ -52,20 +52,3 @@ func pairSums(nums []int, target int) [][]int {
 
 	return pairs
 }
-
-func numSubarrayProductLessThanK(nums []int, k int) int {
-	if k <= 1 {
-		return 0
-	}
-
-	prod, ans, left := 1, 0, 0
-	for right := 0; right < len(nums); right++ {
-		prod *= nums[right]
-		for prod >= k {
-
-			prod = prod / nums[left]
-		}
-		ans += right - left + 1
-	}
-	return ans
-}

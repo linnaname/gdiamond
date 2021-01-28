@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 /**
@@ -131,12 +132,12 @@ func String2File(content, fileName string) error {
 
 //MMapRead read file content by mmap feature
 func MMapRead(path string) ([]byte, error) {
-	at, err := mmap.Open(path)
-	defer at.Close()
+	filePath := filepath.Join(GetCurrentDirectory(), path)
+	at, err := mmap.Open(filePath)
 	if err != nil {
 		return nil, err
 	}
-	fi, err := os.Stat(path)
+	fi, err := os.Stat(filePath)
 	if err != nil {
 		return nil, err
 	}
@@ -145,5 +146,11 @@ func MMapRead(path string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	at.Close()
 	return buff, nil
+}
+
+func GetCurrentDirectory() string {
+	dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+	return strings.Replace(dir, "\\", "/", -1)
 }

@@ -111,16 +111,16 @@ func (s *_S) TestRemoveDataId() {
 }
 
 func (s *_S) TestGetConfigureInfomation() {
-	content := s.s.GetConfigureInfomation("linnana", "DEFAULT_GROUP", 1000)
-	fmt.Println("GetConfigureInfomation", content)
+	content := s.s.GetConfigureInfomation("linna", "DEFAULT_GROUP", 1000)
+	assert.NotEmpty(s.T(), content)
 }
 
 func (s *_S) TestGetAvailableConfigureInfomation() {
-	content := s.s.GetAvailableConfigureInfomation("linnana", "DEFAULT_GROUP", 1000)
-	fmt.Println("GetAvailableConfigureInfomation", content)
+	content := s.s.GetAvailableConfigureInfomation("linna", "DEFAULT_GROUP", 1000)
+	assert.NotEmpty(s.T(), content)
 }
 
 func (s *_S) TestGetAvailableConfigureInfomationFromSnapshot() {
-	content := s.s.GetAvailableConfigureInfomationFromSnapshot("linnana", "DEFAULT_GROUP", 1000)
-	fmt.Println("GetAvailableConfigureInfomationFromSnapshot", content)
+	content := s.s.GetAvailableConfigureInfomationFromSnapshot("linna", "DEFAULT_GROUP", 1000)
+	assert.NotEmpty(s.T(), content)
 }

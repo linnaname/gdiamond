@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 )
 
@@ -122,10 +121,5 @@ func generateCacheKey(group, dataId string) string {
 }
 
 func getFilePath(dir string) string {
-	return filepath.Join(getCurrentDirectory(), dir)
-}
-
-func getCurrentDirectory() string {
-	dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
-	return strings.Replace(dir, "\\", "/", -1)
+	return filepath.Join(fileutil.GetCurrentDirectory(), dir)
 }

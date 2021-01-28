@@ -40,9 +40,10 @@ func (s *_Suite) TestFindConfigInfo() {
 	configInfo, err := findConfigInfo("linname", "DEFAULT_GROUP")
 	assert.NoError(s.T(), err)
 	assert.NotNil(s.T(), configInfo)
-	assert.Equal(s.T(), configInfo.Content, "I hate linnana too")
+	assert.Equal(s.T(), configInfo.Content, "what happend")
 	assert.Equal(s.T(), configInfo.Group, "DEFAULT_GROUP")
 	assert.Equal(s.T(), configInfo.MD5, "8d089c6892a42c2d1786f40ed8063850")
+	assert.NotNil(s.T(), configInfo.LastModified)
 }
 
 func (s *_Suite) TestFindConfigInfoById() {
@@ -51,9 +52,10 @@ func (s *_Suite) TestFindConfigInfoById() {
 	assert.NotNil(s.T(), configInfo)
 	assert.Equal(s.T(), configInfo.DataId, "linna")
 	assert.Equal(s.T(), configInfo.ID, int64(3))
-	assert.Equal(s.T(), configInfo.Content, "song for linana")
+	assert.Equal(s.T(), configInfo.Content, "adafdasfdsa")
 	assert.Equal(s.T(), configInfo.Group, "DEFAULT_GROUP")
-	assert.Equal(s.T(), configInfo.MD5, "6f6e0326c63ed62c709d874f7093f6e1")
+	assert.Equal(s.T(), configInfo.MD5, "b9e1dbe39c2fd1e9c573b20de190c5bf")
+	assert.NotNil(s.T(), configInfo.LastModified)
 }
 
 func (s *_Suite) TestFindConfigInfoByDataId() {

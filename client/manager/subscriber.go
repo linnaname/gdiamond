@@ -32,7 +32,7 @@ import (
 const (
 	WORD_SEPARATOR       = ","
 	LINE_SEPARATOR       = ";"
-	HTTP_URI_FILE        = "/url"
+	HTTP_URI_FILE        = "url"
 	PROBE_MODIFY_REQUEST = "Probe-Modify-Request"
 	DATAID               = "dataId"
 	GROUP                = "group"
@@ -44,6 +44,7 @@ const (
 	SPACING_INTERVAL     = "client-spacing-interval"
 	DATA_DIR             = "data"     // local dir need to watch
 	SNAPSHOT_DIR         = "snapshot" // last time succeed snapshot  dir
+	GetConfigUrl         = "diamond-server/config"
 )
 
 type Subscriber struct {
@@ -360,11 +361,19 @@ func (s *Subscriber) getConfigureInfomation(dataId, group string, timeout int, s
 			s.rotateToNextDomain()
 			continue
 		}
-		domainNamePort := urlutil.GetUrl(domainName.(string), s.diamondConfigure.GetPort(), HTTP_URI_FILE)
-		params := url.Values{}
-		params.Set(DATAID, dataId)
-		params.Set(GROUP, group)
-		req, _ := http.NewRequest("GET", domainNamePort, strings.NewReader(params.Encode()))
+		domainNamePort := urlutil.GetUrl(domainName.(string), s.diamondConfigure.GetPort(), GetConfigUrl)
+		//params := url.Values{}
+		//params.Set(DATAID, dataId)
+		//params.Set(GROUP, group)
+		req, err := http.NewRequest("GET", domainNamePort, nil)
+		if err != nil {
+			log.Println("Can't NewRequest", err)
+			continue
+		}
+		q := req.URL.Query()
+		q.Add(DATAID, dataId)
+		q.Add(GROUP, group)
+		req.URL.RawQuery = q.Encode()
 		if skipContentCache && cacheData != nil {
 			if cacheData.GetLastModifiedHeader() != "" {
 				req.Header.Set(IF_MODIFIED_SINCE, cacheData.GetLastModifiedHeader())

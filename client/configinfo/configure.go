@@ -29,7 +29,7 @@ const (
 func NewConfigure() (*Configure, error) {
 	filePath := os.Getenv("user.home") + "/diamond"
 	err := fileutil.CreateDirIfNessary(filePath)
-	return &Configure{filePath: filePath, domainNameList: dll.New(), localFirst: false, configServerPort: DEFAULT_PORT, port: DEFAULT_PORT,
+	return &Configure{filePath: filePath, domainNameList: dll.New(), localFirst: false, configServerPort: DEFAULT_PORT, port: 1210,
 		onceTimeout: 2000, receiveWaitTime: 2000 * 5, retrieveDataRetryTimes: int(MaxUint>>1) / 10}, err
 }
 

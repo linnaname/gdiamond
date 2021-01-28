@@ -26,8 +26,7 @@ func updateConfigInfo(config *model.ConfigInfo) error {
 	if err != nil {
 		return err
 	}
-	timestamp := time.Now()
-	_, eErr := stm.Exec(config.Content, config.MD5, timestamp, config.DataId, config.Group)
+	_, eErr := stm.Exec(config.Content, config.MD5, config.LastModified, config.DataId, config.Group)
 	if eErr != nil {
 		return eErr
 	}
@@ -35,12 +34,12 @@ func updateConfigInfo(config *model.ConfigInfo) error {
 }
 
 func findConfigInfo(dataId, group string) (*model.ConfigInfo, error) {
-	stm, err := common.GDBConn.Prepare("select id,data_id,group_id,content,md5 from config_info where data_id=? and group_id=?")
+	stm, err := common.GDBConn.Prepare("select id,data_id,group_id,content,md5,gmt_modified from config_info where data_id=? and group_id=?")
 	if err != nil {
 		return nil, err
 	}
 	configInfo := &model.ConfigInfo{}
-	err = stm.QueryRow(dataId, group).Scan(&configInfo.ID, &configInfo.DataId, &configInfo.Group, &configInfo.Content, &configInfo.MD5)
+	err = stm.QueryRow(dataId, group).Scan(&configInfo.ID, &configInfo.DataId, &configInfo.Group, &configInfo.Content, &configInfo.MD5, &configInfo.LastModified)
 	if err != nil {
 		return nil, err
 	}
@@ -48,12 +47,12 @@ func findConfigInfo(dataId, group string) (*model.ConfigInfo, error) {
 }
 
 func findConfigInfoById(id int64) (*model.ConfigInfo, error) {
-	stm, err := common.GDBConn.Prepare("select id,data_id,group_id,content,md5 from config_info where id=?")
+	stm, err := common.GDBConn.Prepare("select id,data_id,group_id,content,md5,gmt_modified from config_info where id=?")
 	if err != nil {
 		return nil, err
 	}
 	configInfo := &model.ConfigInfo{}
-	err = stm.QueryRow(id).Scan(&configInfo.ID, &configInfo.DataId, &configInfo.Group, &configInfo.Content, &configInfo.MD5)
+	err = stm.QueryRow(id).Scan(&configInfo.ID, &configInfo.DataId, &configInfo.Group, &configInfo.Content, &configInfo.MD5, &configInfo.LastModified)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +61,7 @@ func findConfigInfoById(id int64) (*model.ConfigInfo, error) {
 
 func findConfigInfoByDataId(pageNo, pageSize int, dataId string) (*model.Page, error) {
 	page, err := FetchPage("select count(id) from config_info where data_id=?",
-		"select id,data_id,group_id,content,md5 from config_info where data_id=?",
+		"select id,data_id,group_id,content,md5,gmt_modified from config_info where data_id=?",
 		pageNo, pageSize, dataId)
 	if err != nil {
 		return nil, err
@@ -72,7 +71,7 @@ func findConfigInfoByDataId(pageNo, pageSize int, dataId string) (*model.Page, e
 
 func findConfigInfoByGroup(pageNo, pageSize int, group string) (*model.Page, error) {
 	page, err := FetchPage("select count(id) from config_info where group_id=?",
-		"select id,data_id,group_id,content,md5 from config_info where group_id=?",
+		"select id,data_id,group_id,content,md5,gmt_modified from config_info where group_id=?",
 		pageNo, pageSize, group)
 	if err != nil {
 		return nil, err
@@ -82,7 +81,7 @@ func findConfigInfoByGroup(pageNo, pageSize int, group string) (*model.Page, err
 
 func findAllConfigInfo(pageNo, pageSize int) (*model.Page, error) {
 	page, err := FetchPage("select count(id) from config_info",
-		"select id,data_id,group_id,content,md5 from config_info order by id ",
+		"select id,data_id,group_id,content,md5,gmt_modified from config_info order by id ",
 		pageNo, pageSize)
 	if err != nil {
 		return nil, err
@@ -96,7 +95,7 @@ func findAllConfigLike(pageNo, pageSize int, dataId, group string) (*model.Page,
 	}
 
 	sqlCountRows := "select count(id) from config_info where "
-	sqlFetchRows := "select id,data_id,group_id,content,md5 from config_info where "
+	sqlFetchRows := "select id,data_id,group_id,content,md5,gmt_modified from config_info where "
 	wasFirst := true
 	if dataId != "" {
 		sqlCountRows += "data_id like ? "

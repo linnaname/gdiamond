@@ -44,7 +44,7 @@ func FetchPage(sqlCountRows, sqlFetchRows string, pageNo, pageSize int, args ...
 	pageItems := make([]interface{}, 0, pageSize)
 	for rows.Next() {
 		configInfo := &model.ConfigInfo{}
-		err := rows.Scan(&configInfo.ID, &configInfo.DataId, &configInfo.Group, &configInfo.Content, &configInfo.MD5)
+		err := rows.Scan(&configInfo.ID, &configInfo.DataId, &configInfo.Group, &configInfo.Content, &configInfo.MD5, &configInfo.LastModified)
 		if err != nil {
 			return nil, err
 		}

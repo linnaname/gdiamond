@@ -14,30 +14,38 @@ func Init() {
 		defer ticker.Stop()
 		for {
 			<-ticker.C
-			page, err := findAllConfigInfo(1, PAGE_SIZE)
+			err := DumpAll2Disk()
 			if err != nil {
-				log.Println("errs:", err)
 				continue
-			}
-
-			if page != nil {
-				totalPages := page.PageAvailable
-				updateConfigInfo2CacheAndDisk(page)
-				if totalPages > 1 {
-					for pageNo := 2; pageNo <= totalPages; pageNo++ {
-						page, err := findAllConfigInfo(pageNo, PAGE_SIZE)
-						if err != nil {
-							log.Println("errs:", err)
-							continue
-						}
-						if page != nil {
-							updateConfigInfo2CacheAndDisk(page)
-						}
-					}
-				}
 			}
 		}
 	}()
+}
+
+func DumpAll2Disk() error {
+	page, err := findAllConfigInfo(1, PAGE_SIZE)
+	if err != nil {
+		log.Println("errs:", err)
+		return err
+	}
+
+	if page != nil {
+		totalPages := page.PageAvailable
+		updateConfigInfo2CacheAndDisk(page)
+		if totalPages > 1 {
+			for pageNo := 2; pageNo <= totalPages; pageNo++ {
+				page, err := findAllConfigInfo(pageNo, PAGE_SIZE)
+				if err != nil {
+					log.Println("errs:", err)
+					return err
+				}
+				if page != nil {
+					updateConfigInfo2CacheAndDisk(page)
+				}
+			}
+		}
+	}
+	return nil
 }
 
 func updateConfigInfo2CacheAndDisk(page *model.Page) error {

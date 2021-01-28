@@ -6,10 +6,11 @@ import (
 	"gdiamond/server/model"
 	"strings"
 	"sync"
+	"time"
 	"unicode"
 )
 
-var contentMD5Cache sync.Map
+var cache sync.Map
 var locker sync.Mutex
 
 func AddConfigInfo(dataId, group, content string) error {
@@ -18,13 +19,13 @@ func AddConfigInfo(dataId, group, content string) error {
 		return err
 	}
 
-	configInfo := model.NewConfigInfo(dataId, group, content)
+	configInfo := model.NewConfigInfo(dataId, group, content, time.Now())
 	err = addConfingInfo(configInfo)
 	if err != nil {
 		return err
 	}
 	key := generateCacheKey(group, dataId)
-	contentMD5Cache.Store(key, configInfo.MD5)
+	cache.Store(key, configInfo)
 	err = SaveToDisk(configInfo)
 	if err != nil {
 		return err
@@ -39,13 +40,13 @@ func UpdateConfigInfo(dataId, group, content string) error {
 		return err
 	}
 
-	configInfo := model.NewConfigInfo(dataId, group, content)
+	configInfo := model.NewConfigInfo(dataId, group, content, time.Now())
 	err = updateConfigInfo(configInfo)
 	if err != nil {
 		return err
 	}
 	key := generateCacheKey(group, dataId)
-	contentMD5Cache.Store(key, configInfo.MD5)
+	cache.Store(key, configInfo)
 	err = SaveToDisk(configInfo)
 	if err != nil {
 		return err
@@ -61,13 +62,13 @@ func LoadConfigInfoToDisk(dataId, group string) error {
 	}
 	key := generateCacheKey(group, dataId)
 	if configInfo != nil {
-		contentMD5Cache.Store(key, configInfo.MD5)
+		cache.Store(key, configInfo)
 		err := SaveToDisk(configInfo)
 		if err != nil {
 			return err
 		}
 	} else {
-		contentMD5Cache.Delete(key)
+		cache.Delete(key)
 		err := RemoveConfigInfoFromDisk(dataId, group)
 		if err != nil {
 			return err
@@ -112,16 +113,40 @@ func NotifyOtherNodes(dataId, group string) {
 }
 
 func GetContentMD5(dataId, group string) string {
+	locker.Lock()
+	defer locker.Unlock()
 	key := generateMD5CacheKey(dataId, group)
-	md5, _ := contentMD5Cache.Load(key)
-	value := i2Str(md5)
-	if value == "" {
-		locker.Lock()
-		defer locker.Unlock()
-		md5, _ := contentMD5Cache.Load(key)
-		return i2Str(md5)
+	configInfo, loaded := cache.Load(key)
+	if configInfo == nil || !loaded {
+		return ""
 	}
+	value := i2Str(configInfo.(model.ConfigInfo).MD5)
 	return value
+}
+
+func GetLastModified(dataId, group string) string {
+	locker.Lock()
+	defer locker.Unlock()
+	key := generateMD5CacheKey(dataId, group)
+	value, loaded := cache.Load(key)
+	if value == nil || !loaded {
+		return ""
+	}
+	configInfo, _ := value.(model.ConfigInfo)
+	lastModified := configInfo.LastModified
+	return lastModified.String()
+}
+
+func GetCache(dataId, group string) *model.ConfigInfo {
+	locker.Lock()
+	defer locker.Unlock()
+	key := generateMD5CacheKey(dataId, group)
+	value, loaded := cache.Load(key)
+	if value == nil || !loaded {
+		return nil
+	}
+	configInfo, _ := value.(*model.ConfigInfo)
+	return configInfo
 }
 
 func GetConfigInfoPath(dataId, group string) string {
@@ -159,7 +184,8 @@ func checkParameter(dataId, group, content string) error {
 func UpdateMD5Cache(configInfo *model.ConfigInfo) {
 	key := generateMD5CacheKey(configInfo.DataId, configInfo.Group)
 	md5 := common.GetMd5(configInfo.Content)
-	contentMD5Cache.Store(key, md5)
+	configInfo.MD5 = md5
+	cache.Store(key, configInfo)
 }
 
 func generateMD5CacheKey(dataId, group string) string {
