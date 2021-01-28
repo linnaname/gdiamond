@@ -18,7 +18,19 @@ func main() {
 
 	common.InitConfig()
 	common.InitDBConn()
+	service.DumpAll2Disk()
 	service.Init()
+
+	register := &service.Register{}
+	register.RegisterServerAll()
+	ticker := time.NewTicker(time.Second * 30)
+	go func() {
+		defer ticker.Stop()
+		for {
+			<-ticker.C
+			register.RegisterServerAll()
+		}
+	}()
 
 	mux := http.NewServeMux()
 	mux.Handle("/", &diamondHandler{})

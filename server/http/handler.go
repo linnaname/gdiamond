@@ -2,6 +2,7 @@ package main
 
 import (
 	"gdiamond/server/service"
+	"gdiamond/util/fileutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -13,6 +14,7 @@ const (
 	WORD_SEPARATOR = " "
 	LINE_SEPARATOR = "|"
 	CONTENT_MD5    = "Content-MD5"
+	LAST_MODIFIED  = "Last-Modified"
 )
 
 func (*diamondHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -29,9 +31,11 @@ func notifyConfigInfo(w http.ResponseWriter, r *http.Request) {
 		if err == nil {
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("Load config to disk successed"))
+			return
 		} else {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(err.Error()))
+			return
 		}
 	} else {
 		w.Write([]byte("Illegal argument,need dataId and group"))
@@ -45,35 +49,40 @@ func config(w http.ResponseWriter, r *http.Request) {
 		dataId := strings.TrimSpace(r.Form.Get("dataId"))
 		group := strings.TrimSpace(r.Form.Get("group"))
 		if dataId == "" || group == "" {
-			goto ARG_ILLEGAL
+			w.Write([]byte("Illegal argument,need dataId and group"))
+			w.WriteHeader(http.StatusBadRequest)
+			return
 		} else {
-			md5 := service.GetContentMD5(dataId, group)
-			if md5 == "" {
+			cacheInfo := service.GetCache(dataId, group)
+			if cacheInfo == nil {
 				w.WriteHeader(http.StatusNotFound)
 				return
 			}
-			w.Header().Set(CONTENT_MD5, md5)
+			w.Header().Set(CONTENT_MD5, cacheInfo.MD5)
+			w.Header().Set(LAST_MODIFIED, cacheInfo.LastModified.String())
+			if service.IsModified(dataId, group) {
+				w.WriteHeader(http.StatusNotModified)
+				return
+			}
 			if service.IsModified(dataId, group) {
 				w.WriteHeader(http.StatusNotModified)
 				return
 			}
 			path := service.GetConfigInfoPath(dataId, group)
-			if service.IsModified(dataId, group) {
-				w.WriteHeader(http.StatusNotModified)
+			buf, err := fileutil.MMapRead(path)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(path))
+			w.Write(buf)
 		}
 
 	} else {
-		goto ARG_ILLEGAL
+		w.Write([]byte("Illegal argument,need dataId and group"))
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
-
-ARG_ILLEGAL:
-	w.Write([]byte("Illegal argument,need dataId and group"))
-	w.WriteHeader(http.StatusBadRequest)
-	return
 }
 
 //获取已变更的配置
