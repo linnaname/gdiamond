@@ -2,6 +2,7 @@ package fileutil
 
 import (
 	"errors"
+	"golang.org/x/exp/mmap"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -89,4 +90,60 @@ func GetGrandpaDir(path string) (string, error) {
 func IsDir(path string) bool {
 	finfo, _ := os.Stat(path)
 	return finfo.IsDir()
+}
+
+func String2File(content, fileName string) error {
+	parentDir := filepath.Dir(fileName)
+	if IsExist(parentDir) {
+		err := CreateDirIfNessary(parentDir)
+		if err != nil {
+			return err
+		}
+	}
+	tmpFile := fileName + ".tmp"
+	_, err := CreateFileIfNessary(tmpFile)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(tmpFile, []byte(content), 0777)
+	if err != nil {
+		return err
+	}
+
+	prevContent, err := GetFileContent(fileName)
+	if err != nil {
+		return err
+	}
+
+	bakFile := fileName + ".bak"
+	if prevContent != "" {
+		err = ioutil.WriteFile(bakFile, []byte(prevContent), 0777)
+		if err != nil {
+			return err
+		}
+	}
+	err = os.Remove(fileName)
+	if err != nil {
+		return err
+	}
+	return os.Rename(tmpFile, fileName)
+}
+
+//MMapRead read file content by mmap feature
+func MMapRead(path string) ([]byte, error) {
+	at, err := mmap.Open(path)
+	defer at.Close()
+	if err != nil {
+		return nil, err
+	}
+	fi, err := os.Stat(path)
+	if err != nil {
+		return nil, err
+	}
+	buff := make([]byte, fi.Size())
+	_, err = at.ReadAt(buff, 0)
+	if err != nil {
+		return nil, err
+	}
+	return buff, nil
 }

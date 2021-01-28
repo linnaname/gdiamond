@@ -47,3 +47,14 @@ func TestGetGrandpaDir(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEmpty(t, g2)
 }
+
+func TestString2File(t *testing.T) {
+	err := String2File("11", "./test/kv.json")
+	assert.NoError(t, err)
+}
+
+func TestMMapRead(t *testing.T) {
+	buf, err := MMapRead(TEST_FILE)
+	assert.NoError(t, err)
+	assert.NotNil(t, buf)
+}
