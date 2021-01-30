@@ -13,6 +13,7 @@ import (
 var cache sync.Map
 var locker sync.Mutex
 
+//AddConfigInfo add config to database/save it to disk and notify other gdiamond server nodes
 func AddConfigInfo(dataId, group, content string) error {
 	err := checkParameter(dataId, group, content)
 	if err != nil {
@@ -34,6 +35,7 @@ func AddConfigInfo(dataId, group, content string) error {
 	return nil
 }
 
+//UpdateConfigInfo update config inof
 func UpdateConfigInfo(dataId, group, content string) error {
 	err := checkParameter(dataId, group, content)
 	if err != nil {
@@ -55,6 +57,8 @@ func UpdateConfigInfo(dataId, group, content string) error {
 	return nil
 }
 
+//LoadConfigInfoToDisk  when other node call NotifyOtherNodes method gdiamond-server will invoke it method
+//to load config info from db to disk
 func LoadConfigInfoToDisk(dataId, group string) error {
 	configInfo, err := findConfigInfo(dataId, group)
 	if err != nil {
@@ -77,10 +81,12 @@ func LoadConfigInfoToDisk(dataId, group string) error {
 	return nil
 }
 
+//FindConfigInfo find config info from db by dataId and group
 func FindConfigInfo(dataId, group string) (*model.ConfigInfo, error) {
 	return findConfigInfo(dataId, group)
 }
 
+//FindConfigInfoPage find config info by page, group and dataId may be empty
 func FindConfigInfoPage(pageNo, pageSize int, group, dataId string) (*model.Page, error) {
 	if dataId != "" && group != "" {
 		configInfo, err := findConfigInfo(dataId, group)
@@ -96,18 +102,19 @@ func FindConfigInfoPage(pageNo, pageSize int, group, dataId string) (*model.Page
 		}
 		return page, nil
 	} else if dataId == "" && group != "" {
-		return findConfigInfoByDataId(pageNo, pageSize, dataId)
-	} else if dataId != "" && group == "" {
 		return findConfigInfoByGroup(pageNo, pageSize, group)
+	} else if dataId != "" && group == "" {
+		return findConfigInfoByDataId(pageNo, pageSize, dataId)
 	} else {
 		return findAllConfigInfo(pageNo, pageSize)
 	}
 }
 
 func FindConfigInfoLike(pageNo, pageSize int, dataId, group string) (*model.Page, error) {
-	return FindConfigInfoLike(pageNo, pageSize, dataId, group)
+	return findAllConfigLike(pageNo, pageSize, dataId, group)
 }
 
+//NotifyOtherNodes  notify other gdiamond server node when config info changed
 func NotifyOtherNodes(dataId, group string) {
 	notifyConfigInfoChange(dataId, group)
 }
@@ -124,19 +131,6 @@ func GetContentMD5(dataId, group string) string {
 	return value
 }
 
-func GetLastModified(dataId, group string) string {
-	locker.Lock()
-	defer locker.Unlock()
-	key := generateMD5CacheKey(dataId, group)
-	value, loaded := cache.Load(key)
-	if value == nil || !loaded {
-		return ""
-	}
-	configInfo, _ := value.(model.ConfigInfo)
-	lastModified := configInfo.LastModified
-	return lastModified.String()
-}
-
 func GetCache(dataId, group string) *model.ConfigInfo {
 	locker.Lock()
 	defer locker.Unlock()
@@ -149,10 +143,18 @@ func GetCache(dataId, group string) *model.ConfigInfo {
 	return configInfo
 }
 
+func UpdateMD5Cache(configInfo *model.ConfigInfo) {
+	key := generateMD5CacheKey(configInfo.DataId, configInfo.Group)
+	md5 := common.GetMd5(configInfo.Content)
+	configInfo.MD5 = md5
+	cache.Store(key, configInfo)
+}
+
+//GetConfigInfoPath get local file path by dataId and group
 func GetConfigInfoPath(dataId, group string) string {
 	builder := strings.Builder{}
 	builder.WriteString("/")
-	builder.WriteString(BASE_DIR)
+	builder.WriteString(configDataDir)
 	builder.WriteString("/")
 	builder.WriteString(group)
 	builder.WriteString("/")
@@ -179,13 +181,6 @@ func checkParameter(dataId, group, content string) error {
 		return errors.New("invalid content")
 	}
 	return nil
-}
-
-func UpdateMD5Cache(configInfo *model.ConfigInfo) {
-	key := generateMD5CacheKey(configInfo.DataId, configInfo.Group)
-	md5 := common.GetMd5(configInfo.Content)
-	configInfo.MD5 = md5
-	cache.Store(key, configInfo)
 }
 
 func generateMD5CacheKey(dataId, group string) string {

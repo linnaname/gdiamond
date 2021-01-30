@@ -28,6 +28,7 @@ func generateNotifyConfigInfoPath(dataId, group, address string) string {
 }
 
 func getNodeAddress() []string {
+	//TODO get node address from namesrv
 	return []string{"127.0.0.1:1210"}
 }
 

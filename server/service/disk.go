@@ -12,7 +12,7 @@ import (
 	"sync"
 )
 
-const BASE_DIR = "config-data"
+const configDataDir = "config-data"
 
 var modifyMarkCache sync.Map
 
@@ -22,7 +22,7 @@ func SaveToDisk(info *model.ConfigInfo) error {
 	cacheKey := generateCacheKey(group, dataId)
 	_, loaded := modifyMarkCache.LoadOrStore(cacheKey, true)
 	if !loaded {
-		groupPath := getFilePath(BASE_DIR + "/" + group)
+		groupPath := getFilePath(configDataDir + "/" + group)
 		err := fileutil.CreateDirIfNessary(groupPath)
 
 		if err != nil {
@@ -68,11 +68,11 @@ func RemoveConfigInfoFromDisk(dataId, group string) error {
 	cacheKey := generateCacheKey(group, dataId)
 	_, loaded := modifyMarkCache.LoadOrStore(cacheKey, true)
 	if !loaded {
-		groupPath := getFilePath(BASE_DIR + "/" + group)
+		groupPath := getFilePath(configDataDir + "/" + group)
 		if _, err := os.Stat(groupPath); !os.IsNotExist(err) {
 			return nil
 		}
-		dataPath := getFilePath(BASE_DIR + "/" + group + "/" + dataId)
+		dataPath := getFilePath(configDataDir + "/" + group + "/" + dataId)
 		if _, err := os.Stat(dataPath); !os.IsNotExist(err) {
 			return nil
 		}
@@ -121,5 +121,6 @@ func generateCacheKey(group, dataId string) string {
 }
 
 func getFilePath(dir string) string {
-	return filepath.Join(fileutil.GetCurrentDirectory(), dir)
+	baseDir := fileutil.GetCurrentDirectory() + "/gdiamond-server"
+	return filepath.Join(baseDir, dir)
 }
