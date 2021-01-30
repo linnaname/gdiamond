@@ -36,6 +36,7 @@ const (
 	PROBE_MODIFY_REQUEST = "Probe-Modify-Request"
 	DATAID               = "dataId"
 	GROUP                = "group"
+	CONTENT              = "content"
 	IF_MODIFIED_SINCE    = "If-Modified-Since"
 	CONTENT_MD5          = "Content-MD5"
 	ACCEPT_ENCODING      = "Accept-Encoding"
@@ -45,6 +46,7 @@ const (
 	DATA_DIR             = "data"     // local dir need to watch
 	SNAPSHOT_DIR         = "snapshot" // last time succeed snapshot  dir
 	GetConfigUrl         = "diamond-server/config"
+	PublishConfigUrl     = "diamond-server/publishConfig"
 )
 
 type Subscriber struct {
@@ -96,7 +98,7 @@ func (s *Subscriber) Start() {
 	s.randomDomainNamePos()
 	s.isRun = true
 	s.diamondConfigure.SetPollingIntervalTime(configinfo.POLLING_INTERVAL_TIME)
-
+	s.rotateCheckConfigInfo()
 	s.Unlock()
 }
 
@@ -194,7 +196,7 @@ func (s *Subscriber) GetConfigureInfomation(dataId, group string, timeout int) s
 		log.Println("获取本地配置文件出错", err)
 	}
 	result, err := s.getConfigureInfomation(dataId, group, timeout, false)
-	if err != nil && result != "" {
+	if err == nil && result != "" {
 		s.saveSnapshot(dataId, group, result)
 		cacheData.IncrementFetchCountAndGet()
 	}
@@ -216,6 +218,71 @@ func (s *Subscriber) GetAvailableConfigureInfomationFromSnapshot(dataId, group s
 		return result
 	}
 	return s.GetConfigureInfomation(dataId, group, timeout)
+}
+
+func (s *Subscriber) PublishConfigureInfomation(dataId, group, content string) error {
+	if !s.isRun {
+		return errors.New("subscriber isn't running can't publish config info")
+	}
+	if content == "" {
+		return errors.New("content can't be empty")
+	}
+	timeout := s.diamondConfigure.GetReceiveWaitTime()
+	waitTime := 0
+	retryTimes := s.diamondConfigure.GetRetrieveDataRetryTimes()
+	log.Println("设定的获取配置数据的重试次数为：", retryTimes)
+	// 已经尝试过的次数
+	tryCount := 0
+	for 0 == timeout || timeout > waitTime {
+		// 尝试次数加1
+		tryCount++
+		if tryCount > retryTimes+1 {
+			log.Println("已经到达了设定的重试次数")
+			break
+		}
+		log.Println(fmt.Sprintf("获取配置数据，第%v,次尝试, waitTime:%v", tryCount, waitTime))
+
+		// 设置超时时间
+		onceTimeOut := s.getOnceTimeOut(waitTime, timeout)
+		waitTime += onceTimeOut
+
+		client := &http.Client{Timeout: time.Duration(onceTimeOut) * time.Millisecond}
+		pos := atomic.LoadInt64(&s.domainNamePos)
+		domainNameList := s.diamondConfigure.GetDomainNameList()
+		domainName, ok := domainNameList.Get(int(pos))
+		if !ok || domainName == nil {
+			log.Println("无可用domainName")
+			s.rotateToNextDomain()
+			continue
+		}
+		domainNamePort := urlutil.GetUrl(domainName.(string), s.diamondConfigure.GetPort(), PublishConfigUrl)
+		params := url.Values{}
+		params.Set(DATAID, dataId)
+		params.Set(GROUP, group)
+		params.Set(CONTENT, content)
+		req, err := http.NewRequest("POST", domainNamePort, ioutil.NopCloser(strings.NewReader(params.Encode())))
+		if err != nil {
+			log.Println("Can't NewRequest", err)
+			continue
+		}
+		req.Header.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+		resp, err := client.Do(req)
+		if err != nil {
+			log.Println("未知异常", err)
+			s.rotateToNextDomain()
+			continue
+		}
+		statusCode := resp.StatusCode
+		if statusCode == http.StatusOK {
+			return nil
+		} else {
+			log.Println("publish config info timeoutHTTP State: ", statusCode)
+			s.rotateToNextDomain()
+		}
+		resp.Body.Close()
+	}
+
+	return errors.New(fmt.Sprintf("publish config info timeout:%v", timeout))
 }
 
 /**
@@ -241,7 +308,7 @@ func (s *Subscriber) rotateCheckConfigInfo() {
 				log.Println("循环探测发生异常", err)
 			}
 			s.checkSnapshot()
-			s.rotateCheckConfigInfo()
+			//s.rotateCheckConfigInfo()
 		}
 	}()
 	s.bFirstCheck = false

@@ -103,3 +103,11 @@ func (dm *DefaultManager) SetManagerListener(mlistener listener.ManagerListener)
 	dsl.RemoveManagerListeners(dm.dataId, dm.group)
 	dsl.AddManagerListeners(dm.dataId, dm.group, dm.managerListeners)
 }
+
+func (dm *DefaultManager) PublishConfig(content string) bool {
+	err := dm.subscriber.PublishConfigureInfomation(dm.dataId, dm.group, content)
+	if err != nil {
+		return false
+	}
+	return true
+}

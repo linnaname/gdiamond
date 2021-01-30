@@ -37,6 +37,7 @@ func main() {
 	mux.HandleFunc("/diamond-server/notify", notifyConfigInfo)
 	mux.HandleFunc("/diamond-server/config", config)
 	mux.HandleFunc("/diamond-server/getProbeModify", getProbeModifyResult)
+	mux.HandleFunc("/diamond-server/publishConfig", publishConfig)
 
 	server = &http.Server{
 		Addr:         ":1210",

@@ -3,6 +3,7 @@ package main
 import (
 	"gdiamond/server/service"
 	"gdiamond/util/fileutil"
+	"gdiamond/util/stringutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -38,8 +39,8 @@ func notifyConfigInfo(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
-		w.Write([]byte("Illegal argument,need dataId and group"))
 		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Illegal argument,need dataId and group"))
 	}
 }
 
@@ -49,8 +50,8 @@ func config(w http.ResponseWriter, r *http.Request) {
 		dataId := strings.TrimSpace(r.Form.Get("dataId"))
 		group := strings.TrimSpace(r.Form.Get("group"))
 		if dataId == "" || group == "" {
-			w.Write([]byte("Illegal argument,need dataId and group"))
 			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("Illegal argument,need dataId and group"))
 			return
 		} else {
 			cacheInfo := service.GetCache(dataId, group)
@@ -79,8 +80,47 @@ func config(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else {
-		w.Write([]byte("Illegal argument,need dataId and group"))
 		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Illegal argument,need dataId and group"))
+		return
+	}
+}
+
+func publishConfig(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	if len(r.Form) > 0 {
+		dataId := strings.TrimSpace(r.Form.Get("dataId"))
+		group := strings.TrimSpace(r.Form.Get("group"))
+		content := strings.TrimSpace(r.Form.Get("content"))
+		errorMessage := "illegal argument"
+		checkSuccess := true
+		if stringutil.HasInvalidChar(dataId) {
+			checkSuccess = false
+			errorMessage = "invalid DataId"
+		}
+		if stringutil.HasInvalidChar(group) {
+			checkSuccess = false
+			errorMessage = "invalid group"
+		}
+
+		if stringutil.HasInvalidChar(content) {
+			checkSuccess = false
+			errorMessage = "invalid content"
+		}
+		if !checkSuccess {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(errorMessage))
+			return
+		}
+		err := service.AddConfigInfo(dataId, group, content)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Illegal argument"))
 		return
 	}
 }
@@ -88,6 +128,7 @@ func config(w http.ResponseWriter, r *http.Request) {
 //获取已变更的配置
 func getProbeModifyResult(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
+
 	if len(r.Form) > 0 {
 		probeModify := strings.TrimSpace(r.Form.Get("probeModify"))
 		if probeModify == "" {

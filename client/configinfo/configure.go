@@ -3,7 +3,6 @@ package configinfo
 import (
 	"gdiamond/util/fileutil"
 	dll "github.com/emirpasic/gods/lists/doublylinkedlist"
-	"os"
 )
 
 type Configure struct {
@@ -27,7 +26,7 @@ const (
 )
 
 func NewConfigure() (*Configure, error) {
-	filePath := os.Getenv("user.home") + "/diamond"
+	filePath := fileutil.GetCurrentDirectory() + "/gdiamond"
 	err := fileutil.CreateDirIfNessary(filePath)
 	return &Configure{filePath: filePath, domainNameList: dll.New(), localFirst: false, configServerPort: DEFAULT_PORT, port: 1210,
 		onceTimeout: 2000, receiveWaitTime: 2000 * 5, retrieveDataRetryTimes: int(MaxUint>>1) / 10}, err
