@@ -67,6 +67,11 @@ func (s *_S) TestDefaultSubscriberListener_ReceiveConfigInfo() {
 	configureInfomation.ConfigureInfo = "content"
 	s.dsl.ReceiveConfigInfo(configureInfomation)
 	assert.Equal(s.T(), maputil.LengthOfSyncMap(s.dsl.allListeners), int64(1))
+
+	key := makeKey("linnana", "DEFAULT_GROUP")
+	value, ok := s.dsl.allListeners.Load(key)
+	assert.True(s.T(), ok)
+	assert.NotNil(s.T(), value)
 }
 
 func TestName(t *testing.T) {

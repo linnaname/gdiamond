@@ -32,7 +32,6 @@ import (
 const (
 	WORD_SEPARATOR       = ","
 	LINE_SEPARATOR       = ";"
-	HTTP_URI_FILE        = "url"
 	PROBE_MODIFY_REQUEST = "Probe-Modify-Request"
 	DATAID               = "dataId"
 	GROUP                = "group"
@@ -47,6 +46,7 @@ const (
 	SNAPSHOT_DIR         = "snapshot" // last time succeed snapshot  dir
 	GetConfigUrl         = "diamond-server/config"
 	PublishConfigUrl     = "diamond-server/publishConfig"
+	GetProbeModifyUrl    = "diamond-server/getProbeModify"
 )
 
 type Subscriber struct {
@@ -127,6 +127,10 @@ func (s *Subscriber) GetSubscriberListener() listener.SubscriberListener {
 	return s.subscriberListener
 }
 
+func (s *Subscriber) SetSubscriberListener(l listener.SubscriberListener) {
+	s.subscriberListener = l
+}
+
 func (s *Subscriber) AddDataId(dataId, group string) {
 	if group == "" {
 		group = configinfo.DEFAULT_GROUP
@@ -147,9 +151,23 @@ func (s *Subscriber) AddDataId(dataId, group string) {
 	}
 	cacheData, ok := cacheDatas.Load(group)
 	if nil == cacheData || !ok {
-		cacheDatas.LoadOrStore(group, configinfo.NewCacheData(dataId, group))
 		s.Start()
+		c := configinfo.NewCacheData(dataId, group)
+		content := s.loadCacheContentFromDiskLocal(c)
+		md5 := common.GetMd5(content)
+		c.SetMD5(md5)
+		cacheDatas.LoadOrStore(group, c)
+		s.cache.Store(dataId, cacheDatas)
 	}
+}
+
+func (s *Subscriber) loadCacheContentFromDiskLocal(cacheData *configinfo.CacheData) string {
+	content, _ := s.localConfigInfoProcessor.GetLocalConfigureInfomation(cacheData, true)
+	if content != "" {
+		return content
+	}
+	c, _ := s.snapshotConfigInfoProcessor.GetConfigInfomation(cacheData.DataId(), cacheData.Group())
+	return c
 }
 
 func (s *Subscriber) RemoveDataId(dataId, group string) {
@@ -293,7 +311,7 @@ func (s *Subscriber) rotateCheckConfigInfo() {
 	if !s.bFirstCheck {
 		duration = int(s.diamondConfigure.GetPollingIntervalTime())
 	}
-	ticker := time.NewTicker(time.Minute * time.Duration(duration))
+	ticker := time.NewTicker(time.Second * time.Duration(duration))
 	go func() {
 		defer ticker.Stop()
 		for {
@@ -606,18 +624,18 @@ func (s *Subscriber) checkLocalConfigInfo() {
 			if value == nil {
 				return true
 			}
-			cacheData, ok := value.(configinfo.CacheData)
+			cacheData, ok := value.(*configinfo.CacheData)
 			if !ok {
 				return true
 			}
-			configInfo, err := s.getLocalConfigureInfomation(&cacheData)
+			configInfo, err := s.getLocalConfigureInfomation(cacheData)
 			if err != nil {
 				log.Println("向本地索要配置信息的过程抛异常", err)
 				return true
 			}
 			if configInfo != "" {
 				log.Println("本地配置信息被读取, dataId:" + cacheData.DataId() + ", group:" + cacheData.Group())
-				s.popConfigInfo(&cacheData, configInfo)
+				s.popConfigInfo(cacheData, configInfo)
 				return true
 			}
 			if cacheData.UseLocalConfigInfo() {
@@ -667,14 +685,20 @@ func (s *Subscriber) checkUpdateDataIds(timeout int) (*hashset.Set, error) {
 		client := &http.Client{Timeout: time.Duration(onceTimeOut) * time.Millisecond}
 		pos := atomic.LoadInt64(&s.domainNamePos)
 		domainName, _ := s.diamondConfigure.GetDomainNameList().Get(int(pos))
-		domainNamePort := urlutil.GetUrl(domainName.(string), s.diamondConfigure.GetPort(), HTTP_URI_FILE)
+		domainNamePort := urlutil.GetUrl(domainName.(string), s.diamondConfigure.GetPort(), GetProbeModifyUrl)
 
 		params := url.Values{}
 		params.Set(PROBE_MODIFY_REQUEST, probeUpdateString)
-		req, _ := http.NewRequest("POST", domainNamePort, strings.NewReader(params.Encode()))
+		req, err := http.NewRequest("POST", domainNamePort, strings.NewReader(params.Encode()))
+		if err != nil {
+			log.Println("Can't NewRequest", err)
+			continue
+		}
+		req.Header.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
 		resp, err := client.Do(req)
 		if err != nil {
 			log.Println("未知异常", err)
+			continue
 		}
 		statusCode := resp.StatusCode
 		switch statusCode {
@@ -706,11 +730,13 @@ func (s *Subscriber) getProbeUpdateString() string {
 		if !ok {
 			return true
 		}
+
+		l := maputil.LengthOfSyncMap(groupCache)
 		groupCache.Range(func(key, value interface{}) bool {
 			if value == nil {
 				return true
 			}
-			data, ok := value.(configinfo.CacheData)
+			data, ok := value.(*configinfo.CacheData)
 			// 非使用本地配置，才去diamond server检查
 			if !ok {
 				return true
@@ -728,8 +754,9 @@ func (s *Subscriber) getProbeUpdateString() string {
 
 				if data.MD5() != "" {
 					probeModifyBuilder.WriteString(data.MD5())
-					probeModifyBuilder.WriteString(LINE_SEPARATOR)
-				} else {
+				}
+
+				if l > 1 {
 					probeModifyBuilder.WriteString(LINE_SEPARATOR)
 				}
 			}
@@ -737,6 +764,7 @@ func (s *Subscriber) getProbeUpdateString() string {
 		})
 		return true
 	})
+
 	return probeModifyBuilder.String()
 }
 
@@ -804,7 +832,7 @@ func (s *Subscriber) checkSnapshot() {
 			if value == nil {
 				return true
 			}
-			cacheData, ok := value.(configinfo.CacheData)
+			cacheData, ok := value.(*configinfo.CacheData)
 			if !ok {
 				return true
 			}
@@ -813,7 +841,7 @@ func (s *Subscriber) checkSnapshot() {
 			if !cacheData.UseLocalConfigInfo() && cacheData.GetFetchCount() == 0 {
 				configInfo := s.getSnapshotConfiginfomation(cacheData.DataId(), cacheData.Group())
 				if configInfo != "" {
-					s.popConfigInfo(&cacheData, configInfo)
+					s.popConfigInfo(cacheData, configInfo)
 				}
 			}
 			return true

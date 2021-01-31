@@ -54,7 +54,7 @@ func (p *LocalConfigInfoProcessor) Stop() {
 func (p *LocalConfigInfoProcessor) GetLocalConfigureInfomation(cacheData *configinfo.CacheData, force bool) (string, error) {
 	filePath := p.getFilePath(cacheData.DataId(), cacheData.Group())
 	_, ok := p.existFiles[filePath]
-	if ok {
+	if !ok {
 		if cacheData.UseLocalConfigInfo() {
 			cacheData.SetLastModifiedHeader("")
 			cacheData.SetMD5("")

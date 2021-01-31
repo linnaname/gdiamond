@@ -24,9 +24,7 @@ func (a A) ReceiveConfigInfo(configInfo string) {
 
 func TestNewManager(t *testing.T) {
 	dm := NewManager("linna", "DEFAULT_GROUP", A{})
-	content := dm.GetConfigureInfomation(1000)
-	//assert.NotEmpty(t, content)
-	println(content)
+	assert.NotNil(t, dm)
 }
 
 func TestDefaultManager_GetAndSetManagerListener(t *testing.T) {
@@ -68,4 +66,9 @@ func TestDefaultManager_PublishConfig(t *testing.T) {
 	dm := NewManager("my.test", "DEFAULT_GROUP", A{})
 	b := dm.PublishConfig("whaterver it's")
 	assert.True(t, b)
+}
+
+func TestDefaultManager_ManagerListener(t *testing.T) {
+	NewManager("linna", "DEFAULT_GROUP", A{})
+	select {}
 }

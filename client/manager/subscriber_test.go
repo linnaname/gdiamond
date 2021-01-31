@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"sync"
 	"testing"
 )
 
@@ -86,9 +87,18 @@ func (s *_S) TestGetSubscriberListener() {
 }
 
 func (s *_S) TestAddDataId() {
+	assert.Equal(s.T(), maputil.LengthOfSyncMap(s.s.cache), int64(0))
 	s.s.AddDataId("linnana", "DEFAULT_GROUP")
 	fmt.Println("AddDataId", s.s.cache)
 	assert.Greater(s.T(), maputil.LengthOfSyncMap(s.s.cache), int64(0))
+	value, loaded := s.s.cache.Load("linnana")
+	assert.True(s.T(), loaded)
+	assert.NotNil(s.T(), value)
+	fmt.Println("value:", value)
+	groupCache, ok := value.(sync.Map)
+	assert.True(s.T(), ok)
+	assert.NotNil(s.T(), groupCache)
+	assert.Greater(s.T(), maputil.LengthOfSyncMap(groupCache), int64(0))
 }
 
 func (s *_S) TestGetDataIds() {

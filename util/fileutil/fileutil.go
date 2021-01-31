@@ -131,8 +131,7 @@ func String2File(content, fileName string) error {
 }
 
 //MMapRead read file content by mmap feature
-func MMapRead(path string) ([]byte, error) {
-	filePath := filepath.Join(GetCurrentDirectory(), path)
+func MMapRead(filePath string) ([]byte, error) {
 	at, err := mmap.Open(filePath)
 	if err != nil {
 		return nil, err

@@ -12,10 +12,11 @@ import (
 type diamondHandler struct{}
 
 const (
-	WORD_SEPARATOR = " "
-	LINE_SEPARATOR = "|"
-	CONTENT_MD5    = "Content-MD5"
-	LAST_MODIFIED  = "Last-Modified"
+	WORD_SEPARATOR       = ","
+	LINE_SEPARATOR       = ";"
+	CONTENT_MD5          = "Content-MD5"
+	LAST_MODIFIED        = "Last-Modified"
+	PROBE_MODIFY_REQUEST = "Probe-Modify-Request"
 )
 
 func (*diamondHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -70,7 +71,8 @@ func config(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			path := service.GetConfigInfoPath(dataId, group)
-			buf, err := fileutil.MMapRead(path)
+			filePath := service.GetFilePath(path)
+			buf, err := fileutil.MMapRead(filePath)
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				return
@@ -128,9 +130,8 @@ func publishConfig(w http.ResponseWriter, r *http.Request) {
 //获取已变更的配置
 func getProbeModifyResult(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-
 	if len(r.Form) > 0 {
-		probeModify := strings.TrimSpace(r.Form.Get("probeModify"))
+		probeModify := strings.TrimSpace(r.Form.Get(PROBE_MODIFY_REQUEST))
 		if probeModify == "" {
 			goto ARG_ILLEGAL
 		} else {
@@ -151,14 +152,15 @@ func getProbeModifyResult(w http.ResponseWriter, r *http.Request) {
 			escapeUrl := url.QueryEscape(result)
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte(escapeUrl))
+			return
 		}
 	} else {
 		goto ARG_ILLEGAL
 	}
 
 ARG_ILLEGAL:
-	w.Write([]byte("Illegal argument,need probeModify"))
 	w.WriteHeader(http.StatusBadRequest)
+	w.Write([]byte("Illegal argument,need probeModify"))
 	return
 }
 
@@ -173,7 +175,7 @@ func getConfigKeyList(probeModify string) []ConfigKey {
 		return nil
 	}
 	configKeyStrings := strings.Split(probeModify, LINE_SEPARATOR)
-	configKeyList := make([]ConfigKey, len(configKeyStrings))
+	configKeyList := make([]ConfigKey, 0)
 	for _, configKeyString := range configKeyStrings {
 		configKey := strings.Split(configKeyString, WORD_SEPARATOR)
 		if len(configKey) > 3 {

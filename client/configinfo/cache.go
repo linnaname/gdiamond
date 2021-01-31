@@ -6,6 +6,7 @@ type CacheData struct {
 	dataId                 string
 	group                  string
 	md5                    string
+	content                string
 	lastModifiedHeader     string
 	domainNamePos          int
 	localConfigInfoFile    string

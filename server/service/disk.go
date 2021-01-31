@@ -22,7 +22,7 @@ func SaveToDisk(info *model.ConfigInfo) error {
 	cacheKey := generateCacheKey(group, dataId)
 	_, loaded := modifyMarkCache.LoadOrStore(cacheKey, true)
 	if !loaded {
-		groupPath := getFilePath(configDataDir + "/" + group)
+		groupPath := GetFilePath(configDataDir + "/" + group)
 		err := fileutil.CreateDirIfNessary(groupPath)
 
 		if err != nil {
@@ -68,11 +68,11 @@ func RemoveConfigInfoFromDisk(dataId, group string) error {
 	cacheKey := generateCacheKey(group, dataId)
 	_, loaded := modifyMarkCache.LoadOrStore(cacheKey, true)
 	if !loaded {
-		groupPath := getFilePath(configDataDir + "/" + group)
+		groupPath := GetFilePath(configDataDir + "/" + group)
 		if _, err := os.Stat(groupPath); !os.IsNotExist(err) {
 			return nil
 		}
-		dataPath := getFilePath(configDataDir + "/" + group + "/" + dataId)
+		dataPath := GetFilePath(configDataDir + "/" + group + "/" + dataId)
 		if _, err := os.Stat(dataPath); !os.IsNotExist(err) {
 			return nil
 		}
@@ -120,7 +120,7 @@ func generateCacheKey(group, dataId string) string {
 	return group + "/" + dataId
 }
 
-func getFilePath(dir string) string {
+func GetFilePath(dir string) string {
 	baseDir := fileutil.GetCurrentDirectory() + "/gdiamond-server"
 	return filepath.Join(baseDir, dir)
 }

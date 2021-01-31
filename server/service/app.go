@@ -127,7 +127,7 @@ func GetContentMD5(dataId, group string) string {
 	if configInfo == nil || !loaded {
 		return ""
 	}
-	value := i2Str(configInfo.(model.ConfigInfo).MD5)
+	value := i2Str(configInfo.(*model.ConfigInfo).MD5)
 	return value
 }
 

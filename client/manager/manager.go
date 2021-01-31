@@ -59,6 +59,7 @@ func NewManager(dataId, group string, mlistener listener.ManagerListener) *Defau
 	sl := dm.subscriber.GetSubscriberListener()
 	dsl, _ := sl.(listener.DefaultSubscriberListener)
 	dsl.AddManagerListeners(dataId, group, dm.managerListeners)
+	dm.subscriber.SetSubscriberListener(dsl)
 	dm.subscriber.AddDataId(dataId, group)
 	dm.subscriber.Start()
 	return dm
