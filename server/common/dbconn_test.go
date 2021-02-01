@@ -10,4 +10,5 @@ func TestInitDBConn(t *testing.T) {
 	err := InitDBConn()
 	assert.NoError(t, err)
 	assert.NotNil(t, GDBConn)
+	CloseConn()
 }

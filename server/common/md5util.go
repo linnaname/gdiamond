@@ -5,6 +5,7 @@ import (
 	"fmt"
 )
 
+//GetMd5 get md5 from string
 func GetMd5(content string) string {
 	if content == "" {
 		return ""

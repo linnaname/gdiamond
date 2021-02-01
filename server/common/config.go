@@ -5,21 +5,21 @@ import (
 	"io/ioutil"
 )
 
+//GMySQLConfig  mysql sql config holder
 var GMySQLConfig *MySQLConfig
 
+//MySQLConfig struct of mysql config
 type MySQLConfig struct {
 	DBUrl        string `json:"dbUrl"`
 	MaxIdleConns int    `json:"maxIdleConns"`
 	MaxOpenConns int    `json:"maxOpenConns"`
 }
 
-const CONFIG_PATH = "/Users/goranka/linnana/go/gdiamond/server/etc/etc.json"
+const configPath = "/Users/goranka/linnana/go/gdiamond/server/etc/etc.json"
 
-/**
-read mysql connect config from local file
-*/
+//InitConfig read mysql connect config from local file
 func InitConfig() error {
-	content, err := ioutil.ReadFile(CONFIG_PATH)
+	content, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		return err
 	}
