@@ -9,14 +9,14 @@ import (
 )
 
 const (
-	TEST_DIR = "test"
+	TestDir = "test"
 )
 
 func TestRWatcher(t *testing.T) {
 	rw, err := NewWatcher()
 	assert.NoError(t, err)
 	assert.NotNil(t, rw)
-	err = rw.AddRecursive(TEST_DIR)
+	err = rw.AddRecursive(TestDir)
 	assert.NoError(t, err)
 
 	var wg sync.WaitGroup

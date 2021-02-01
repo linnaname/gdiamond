@@ -6,26 +6,26 @@ import (
 )
 
 const (
-	TEST_DIR  = "test"
-	TEST_FILE = "test.file"
+	TestDir  = "test"
+	TestFile = "test.file"
 )
 
-func TestCreateDirIfNessary(t *testing.T) {
-	err := CreateDirIfNessary(TEST_DIR)
+func TestCreateDirIfNecessary(t *testing.T) {
+	err := CreateDirIfNecessary(TestDir)
 	assert.NoError(t, err)
 }
 
 func TestIsDir(t *testing.T) {
-	assert.True(t, IsDir(TEST_DIR))
+	assert.True(t, IsDir(TestDir))
 }
 
 func TestIsExist(t *testing.T) {
-	b := IsExist(TEST_DIR)
+	b := IsExist(TestDir)
 	assert.True(t, b)
 }
 
 func TestCreateFileIfNessary(t *testing.T) {
-	f, err := CreateFileIfNessary(TEST_FILE)
+	f, err := CreateFileIfNessary(TestFile)
 	assert.NoError(t, err)
 	assert.NotNil(t, f)
 	assert.True(t, IsExist(f.Name()))
@@ -33,17 +33,17 @@ func TestCreateFileIfNessary(t *testing.T) {
 }
 
 func TestGetFileContent(t *testing.T) {
-	content, err := GetFileContent(TEST_FILE)
+	content, err := GetFileContent(TestFile)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, content)
 }
 
 func TestGetGrandpaDir(t *testing.T) {
-	g1, err := GetGrandpaDir(TEST_DIR)
+	g1, err := GetGrandpaDir(TestDir)
 	assert.Error(t, err)
 	assert.Empty(t, g1)
 
-	g2, err := GetGrandpaDir(TEST_FILE)
+	g2, err := GetGrandpaDir(TestFile)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, g2)
 }
@@ -54,7 +54,7 @@ func TestString2File(t *testing.T) {
 }
 
 func TestMMapRead(t *testing.T) {
-	buf, err := MMapRead(TEST_FILE)
+	buf, err := MMapRead(TestFile)
 	assert.NoError(t, err)
 	assert.NotNil(t, buf)
 }

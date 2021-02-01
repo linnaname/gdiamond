@@ -4,6 +4,7 @@ import (
 	"net"
 )
 
+//GetLocalIP get local ip, if more than one return first one, if can't get it return empty string
 func GetLocalIP() string {
 	interfaceAddrs, err := net.InterfaceAddrs()
 	if err != nil {

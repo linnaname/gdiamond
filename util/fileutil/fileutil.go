@@ -9,12 +9,10 @@ import (
 	"strings"
 )
 
-/**
-CreateDirIfNessary create directory if not exist,pay attention to fix permission and
-it will create any necessary parents
-If path is already a exist, it does nothing and returns nil.
-*/
-func CreateDirIfNessary(path string) error {
+//CreateDirIfNecessary create directory if not exist,pay attention to fix permission and
+//it will create any necessary parents
+//If path is already a exist, it does nothing and returns nil.
+func CreateDirIfNecessary(path string) error {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return os.MkdirAll(path, os.ModePerm)
 	}
@@ -30,10 +28,8 @@ func IsExist(filepath string) bool {
 	return false
 }
 
-/**
-CreateFileIfNessary create file if not exist,pay attention to fix permission
-If file is already a exist, it does nothing and returns nil.
-*/
+//CreateFileIfNessary create file if not exist,pay attention to fix permission
+//If file is already a exist, it does nothing and returns nil.
 func CreateFileIfNessary(filepath string) (*os.File, error) {
 	file, err := os.OpenFile(filepath, os.O_TRUNC|os.O_WRONLY, os.ModePerm)
 	if err != nil && os.IsNotExist(err) {
@@ -43,9 +39,7 @@ func CreateFileIfNessary(filepath string) (*os.File, error) {
 	return file, err
 }
 
-/**
-GetFileContent get all file content once
-*/
+//GetFileContent get all file content once
 func GetFileContent(filePath string) (string, error) {
 	finfo, err := os.Stat(filePath)
 	if err != nil {
@@ -65,11 +59,9 @@ func GetFileContent(filePath string) (string, error) {
 	return string(content), nil
 }
 
-/**
-GetGrandpaDir get grandpa base dir of given filepath
-path must be file path not dir
-return  grandpa dir path,if there no grandpa it will return empty string and error
-*/
+//GetGrandpaDir get grandpa base dir of given filepath
+//path must be file path not dir
+//return  grandpa dir path,if there no grandpa it will return empty string and error
 func GetGrandpaDir(path string) (string, error) {
 	if IsDir(path) {
 		return "", errors.New("not valid file")
@@ -79,12 +71,10 @@ func GetGrandpaDir(path string) (string, error) {
 		grandpaPath := filepath.Dir(parentPath)
 		if IsDir(grandpaPath) {
 			return filepath.Base(grandpaPath), nil
-		} else {
-			return "", errors.New("grandpa path not dir")
 		}
-	} else {
-		return "", errors.New("parent path not dir")
+		return "", errors.New("grandpa path not dir")
 	}
+	return "", errors.New("parent path not dir")
 }
 
 //IsDir if path is dir,don't care about err
@@ -93,10 +83,11 @@ func IsDir(path string) bool {
 	return finfo.IsDir()
 }
 
+//String2File write string content to fileName
 func String2File(content, fileName string) error {
 	parentDir := filepath.Dir(fileName)
 	if IsExist(parentDir) {
-		err := CreateDirIfNessary(parentDir)
+		err := CreateDirIfNecessary(parentDir)
 		if err != nil {
 			return err
 		}
@@ -149,6 +140,7 @@ func MMapRead(filePath string) ([]byte, error) {
 	return buff, nil
 }
 
+//GetCurrentDirectory get current programmer execute directory
 func GetCurrentDirectory() string {
 	dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
 	return strings.Replace(dir, "\\", "/", -1)

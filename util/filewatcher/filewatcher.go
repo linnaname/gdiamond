@@ -14,6 +14,7 @@ import (
 code from https://github.com/farmergreg/rfsnotify,  I need to change something about it so I copy it and make some difference
 */
 
+//RWatcher Recursive file or directory watcher
 type RWatcher struct {
 	//you can for select all events and errors
 	Events   chan fsnotify.Event
@@ -23,6 +24,7 @@ type RWatcher struct {
 	isClosed bool
 }
 
+//NewWatcher create RWatcher
 func NewWatcher() (*RWatcher, error) {
 	fsWatch, err := fsnotify.NewWatcher()
 	if err != nil {
