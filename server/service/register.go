@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"gdiamond/common/namesrv"
+	"gdiamond/util/netutil"
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
 	"github.com/smallnest/goframe"
 	"log"
@@ -33,7 +34,7 @@ func (r *Register) RegisterServerAll() {
 		//TODO load from local server config
 		rreq.ServerId = 0
 		rreq.ServerName = "test"
-		rreq.ServerAddr = "127.0.0.1"
+		rreq.ServerAddr = netutil.GetLocalIP()
 		rreq.ClusterName = "testCluster"
 		rreq.HaServerAddr = "127.0.0.1"
 		body, _ := json.Marshal(rreq)
