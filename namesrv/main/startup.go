@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"gdiamond/namesrv/kvconfig"
 	"gdiamond/namesrv/network"
 	"gdiamond/namesrv/routeinfo"
 	"log"
@@ -13,21 +12,20 @@ import (
 	"time"
 )
 
-type Startup struct {
-	kvConfig  *kvconfig.KVConfig
+type startUp struct {
 	routeInfo *routeinfo.RouteInfo
 }
 
-var s *Startup
+var s *startUp
 
 func main() {
-	s = &Startup{}
+	s = &startUp{}
 	s.initialize()
 	go httpServer()
 	s.start()
 }
 
-func (s *Startup) initialize() {
+func (s *startUp) initialize() {
 	s.routeInfo = routeinfo.New()
 
 	scanTicker := time.NewTicker(time.Second * 60)
@@ -40,7 +38,7 @@ func (s *Startup) initialize() {
 	}()
 }
 
-func (s *Startup) start() {
+func (s *startUp) start() {
 	//配置化或者使用命令参数
 	addr := fmt.Sprintf("tcp://:%d", 9000)
 	network.New(addr, s.routeInfo)

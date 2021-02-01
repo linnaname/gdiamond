@@ -1,10 +1,13 @@
 package namesrv
 
+//Request general request
 type Request struct {
 	ActionType uint16
-	Body       []byte
+	//store different
+	Body []byte
 }
 
+//RegisterRequest RegisterRequest
 type RegisterRequest struct {
 	ServerName   string
 	ServerAddr   string
@@ -14,7 +17,8 @@ type RegisterRequest struct {
 }
 
 const (
-	ActionRegister   = 0x0001 // register server
-	ActionUnRegister = 0x0002 // unregister server
-
+	//ActionRegister register server
+	ActionRegister = 0x0001
+	//ActionUnRegister unregister server
+	ActionUnRegister = 0x0002
 )

@@ -11,6 +11,7 @@ import (
 	"log"
 )
 
+//NameServer name server
 type NameServer struct {
 	*gnet.EventServer
 	async      bool
@@ -19,6 +20,7 @@ type NameServer struct {
 	routeInfo  *routeinfo.RouteInfo
 }
 
+//New setup name server
 func New(addr string, routeInfo *routeinfo.RouteInfo) error {
 	codec := getCodec()
 	ns := &NameServer{addr: addr, async: true, workerPool: goroutine.Default(), routeInfo: routeInfo}
@@ -27,28 +29,33 @@ func New(addr string, routeInfo *routeinfo.RouteInfo) error {
 	return err
 }
 
+//OnInitComplete implement gnet method
 func (ns *NameServer) OnInitComplete(srv gnet.Server) (action gnet.Action) {
 	log.Printf("NameServer is listening on %s (multi-cores: %t, loops: %d)\n",
 		srv.Addr.String(), srv.Multicore, srv.NumEventLoop)
 	return
 }
 
+//OnShutdown implement gnet method
 func (ns *NameServer) OnShutdown(srv gnet.Server) {
 	log.Printf("NameServer OnShutdown on %s (multi-cores: %t, loops: %d)\n",
 		srv.Addr.String(), srv.Multicore, srv.NumEventLoop)
 	return
 }
 
+//OnOpened implement gnet method
 func (ns *NameServer) OnOpened(c gnet.Conn) (out []byte, action gnet.Action) {
 	log.Printf("NameServer OnOpened")
 	return
 }
 
+//OnClosed implement gnet method
 func (ns *NameServer) OnClosed(c gnet.Conn, err error) (action gnet.Action) {
 	log.Printf("NameServer OnClosed")
 	return
 }
 
+//React  implement gnet method, handle logic
 func (ns *NameServer) React(frame []byte, c gnet.Conn) (out []byte, action gnet.Action) {
 	fmt.Println("React frame:", string(frame))
 
