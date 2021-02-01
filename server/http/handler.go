@@ -12,11 +12,11 @@ import (
 type diamondHandler struct{}
 
 const (
-	WORD_SEPARATOR       = ","
-	LINE_SEPARATOR       = ";"
-	CONTENT_MD5          = "Content-MD5"
-	LAST_MODIFIED        = "Last-Modified"
-	PROBE_MODIFY_REQUEST = "Probe-Modify-Request"
+	wordSeparator      = ","
+	lineSeparator      = ";"
+	contentMd5         = "Content-MD5"
+	lastModified       = "Last-Modified"
+	probeModifyRequest = "Probe-Modify-Request"
 )
 
 func (*diamondHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -34,15 +34,13 @@ func notifyConfigInfo(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("Load config to disk successed"))
 			return
-		} else {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(err.Error()))
-			return
 		}
-	} else {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Illegal argument,need dataId and group"))
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
 	}
+	w.WriteHeader(http.StatusBadRequest)
+	w.Write([]byte("Illegal argument,need dataId and group"))
 }
 
 func config(w http.ResponseWriter, r *http.Request) {
@@ -60,8 +58,8 @@ func config(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusNotFound)
 				return
 			}
-			w.Header().Set(CONTENT_MD5, cacheInfo.MD5)
-			w.Header().Set(LAST_MODIFIED, cacheInfo.LastModified.String())
+			w.Header().Set(contentMd5, cacheInfo.MD5)
+			w.Header().Set(lastModified, cacheInfo.LastModified.String())
 			if service.IsModified(dataId, group) {
 				w.WriteHeader(http.StatusNotModified)
 				return
@@ -98,7 +96,7 @@ func publishConfig(w http.ResponseWriter, r *http.Request) {
 		checkSuccess := true
 		if stringutil.HasInvalidChar(dataId) {
 			checkSuccess = false
-			errorMessage = "invalid DataId"
+			errorMessage = "invalid DataID"
 		}
 		if stringutil.HasInvalidChar(group) {
 			checkSuccess = false
@@ -131,7 +129,7 @@ func publishConfig(w http.ResponseWriter, r *http.Request) {
 func getProbeModifyResult(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	if len(r.Form) > 0 {
-		probeModify := strings.TrimSpace(r.Form.Get(PROBE_MODIFY_REQUEST))
+		probeModify := strings.TrimSpace(r.Form.Get(probeModifyRequest))
 		if probeModify == "" {
 			goto ARG_ILLEGAL
 		} else {
@@ -143,15 +141,15 @@ func getProbeModifyResult(w http.ResponseWriter, r *http.Request) {
 				md5 := service.GetContentMD5(dataId, group)
 				if md5 != configKeyList[i].MD5 {
 					resultBuilder.WriteString(dataId)
-					resultBuilder.WriteString(WORD_SEPARATOR)
+					resultBuilder.WriteString(wordSeparator)
 					resultBuilder.WriteString(group)
-					resultBuilder.WriteString(LINE_SEPARATOR)
+					resultBuilder.WriteString(lineSeparator)
 				}
 			}
 			result := resultBuilder.String()
-			escapeUrl := url.QueryEscape(result)
+			escapeURL := url.QueryEscape(result)
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(escapeUrl))
+			w.Write([]byte(escapeURL))
 			return
 		}
 	} else {
@@ -164,6 +162,7 @@ ARG_ILLEGAL:
 	return
 }
 
+//ConfigKey to simplify config model op
 type ConfigKey struct {
 	DataId string
 	Group  string
@@ -174,10 +173,10 @@ func getConfigKeyList(probeModify string) []ConfigKey {
 	if probeModify == "" {
 		return nil
 	}
-	configKeyStrings := strings.Split(probeModify, LINE_SEPARATOR)
+	configKeyStrings := strings.Split(probeModify, lineSeparator)
 	configKeyList := make([]ConfigKey, 0)
 	for _, configKeyString := range configKeyStrings {
-		configKey := strings.Split(configKeyString, WORD_SEPARATOR)
+		configKey := strings.Split(configKeyString, wordSeparator)
 		if len(configKey) > 3 {
 			continue
 		}

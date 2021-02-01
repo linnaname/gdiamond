@@ -7,7 +7,7 @@ import (
 )
 
 func TestName(t *testing.T) {
-	arr := strings.Split("my.test,DEFAULT_GROUP,", LINE_SEPARATOR)
+	arr := strings.Split("my.test,DEFAULT_GROUP,", lineSeparator)
 	fmt.Println(len(arr))
 	fmt.Println(arr)
 }
