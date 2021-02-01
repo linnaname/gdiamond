@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 	"gdiamond/server/common"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
@@ -26,6 +27,11 @@ func (s *_S) TestInit() {
 	for {
 
 	}
+}
+
+func (s *_S) TestDumpAll2Disk() {
+	err := DumpAll2Disk()
+	assert.NoError(s.T(), err)
 }
 
 func TestS(t *testing.T) {

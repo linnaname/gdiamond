@@ -16,3 +16,12 @@ func TestIsModified(t *testing.T) {
 	v := IsModified("DEFAULT_GROUP", "linna.com")
 	assert.False(t, v)
 }
+
+func TestRemoveConfigInfoFromDisk(t *testing.T) {
+	err := RemoveConfigInfoFromDisk("linna.com", "DEFAULT_GROUP")
+	assert.NoError(t, err)
+}
+
+func TestGetFilePath(t *testing.T) {
+	assert.NotEmpty(t, GetFilePath("group/dataID"))
+}

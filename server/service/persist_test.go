@@ -26,7 +26,7 @@ func (s *_Suite) TearDownSuite() {
 
 func (s *_Suite) TestAddConfingInfo() {
 	configInfo := &model.ConfigInfo{Group: "AAA_GROUP", DataId: "linna.com", Content: "song for linana", MD5: fmt.Sprintf("%x", md5.Sum([]byte("song for linana")))}
-	err := addConfingInfo(configInfo)
+	err := addConfigInfo(configInfo)
 	assert.NoError(s.T(), err)
 }
 
@@ -47,7 +47,7 @@ func (s *_Suite) TestFindConfigInfo() {
 }
 
 func (s *_Suite) TestFindConfigInfoById() {
-	configInfo, err := findConfigInfoById(3)
+	configInfo, err := findConfigInfoByID(3)
 	assert.NoError(s.T(), err)
 	assert.NotNil(s.T(), configInfo)
 	assert.Equal(s.T(), configInfo.DataId, "linna")
@@ -59,7 +59,7 @@ func (s *_Suite) TestFindConfigInfoById() {
 }
 
 func (s *_Suite) TestFindConfigInfoByDataId() {
-	page, err := findConfigInfoByDataId(1, 1, "linna.com")
+	page, err := findConfigInfoByDataID(1, 1, "linna.com")
 	assert.NoError(s.T(), err)
 	assert.NotNil(s.T(), page)
 	assert.Equal(s.T(), page.TotalCount, 2)

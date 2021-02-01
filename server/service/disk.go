@@ -1,7 +1,6 @@
 package service
 
 import (
-	"errors"
 	"fmt"
 	"gdiamond/server/model"
 	"gdiamond/util/fileutil"
@@ -16,27 +15,29 @@ const configDataDir = "config-data"
 
 var modifyMarkCache sync.Map
 
+//SaveToDisk write config info data to local file
+//create dir or file if necessary
 func SaveToDisk(info *model.ConfigInfo) error {
 	group := info.Group
-	dataId := info.DataId
-	cacheKey := generateCacheKey(group, dataId)
+	dataID := info.DataId
+	cacheKey := generateCacheKey(group, dataID)
 	_, loaded := modifyMarkCache.LoadOrStore(cacheKey, true)
 	if !loaded {
 		groupPath := GetFilePath(configDataDir + "/" + group)
-		err := fileutil.CreateDirIfNessary(groupPath)
+		err := fileutil.CreateDirIfNecessary(groupPath)
 
 		if err != nil {
 			modifyMarkCache.Delete(cacheKey)
 			return err
 		}
-		targetFile, err := createFileIfNessary(groupPath, dataId)
+		targetFile, err := createFileIfNessary(groupPath, dataID)
 
 		if err != nil {
 			modifyMarkCache.Delete(cacheKey)
 			return err
 		}
 
-		tempFile, err := createTempFile(dataId, group)
+		tempFile, err := createTempFile(dataID, group)
 		if err != nil {
 			modifyMarkCache.Delete(cacheKey)
 			return err
@@ -58,21 +59,21 @@ func SaveToDisk(info *model.ConfigInfo) error {
 
 		clearCacheAndFile(tempFile, cacheKey)
 		return nil
-	} else {
-		modifyMarkCache.Delete(cacheKey)
-		return errors.New(fmt.Sprintf("config info is being motified, dataId=%s,group=%s", dataId, group))
 	}
+	modifyMarkCache.Delete(cacheKey)
+	return fmt.Errorf("config info is being motified, dataID=%s,group=%s", dataID, group)
 }
 
-func RemoveConfigInfoFromDisk(dataId, group string) error {
-	cacheKey := generateCacheKey(group, dataId)
+//RemoveConfigInfoFromDisk  remove config info file from disk, it mean delete file
+func RemoveConfigInfoFromDisk(dataID, group string) error {
+	cacheKey := generateCacheKey(group, dataID)
 	_, loaded := modifyMarkCache.LoadOrStore(cacheKey, true)
 	if !loaded {
 		groupPath := GetFilePath(configDataDir + "/" + group)
 		if _, err := os.Stat(groupPath); !os.IsNotExist(err) {
 			return nil
 		}
-		dataPath := GetFilePath(configDataDir + "/" + group + "/" + dataId)
+		dataPath := GetFilePath(configDataDir + "/" + group + "/" + dataID)
 		if _, err := os.Stat(dataPath); !os.IsNotExist(err) {
 			return nil
 		}
@@ -83,12 +84,19 @@ func RemoveConfigInfoFromDisk(dataId, group string) error {
 	return nil
 }
 
-func IsModified(dataId, group string) bool {
-	v, ok := modifyMarkCache.Load(generateCacheKey(group, dataId))
+//IsModified  whether modified config info by memory cache
+func IsModified(dataID, group string) bool {
+	v, ok := modifyMarkCache.Load(generateCacheKey(group, dataID))
 	if !ok {
 		return false
 	}
 	return v == nil
+}
+
+//GetFilePath  filepath where diamond-server store config data
+func GetFilePath(dir string) string {
+	baseDir := fileutil.GetCurrentDirectory() + "/gdiamond-server"
+	return filepath.Join(baseDir, dir)
 }
 
 func clearCacheAndFile(tempFile *os.File, cacheKey string) {
@@ -112,15 +120,10 @@ func createFileIfNessary(parent, child string) (*os.File, error) {
 	return file, err
 }
 
-func createTempFile(dataId, group string) (*os.File, error) {
-	return ioutil.TempFile("", group+"-"+dataId+".tmp")
+func createTempFile(dataID, group string) (*os.File, error) {
+	return ioutil.TempFile("", group+"-"+dataID+".tmp")
 }
 
-func generateCacheKey(group, dataId string) string {
-	return group + "/" + dataId
-}
-
-func GetFilePath(dir string) string {
-	baseDir := fileutil.GetCurrentDirectory() + "/gdiamond-server"
-	return filepath.Join(baseDir, dir)
+func generateCacheKey(group, dataID string) string {
+	return group + "/" + dataID
 }

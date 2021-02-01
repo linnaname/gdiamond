@@ -8,22 +8,22 @@ import (
 )
 
 const (
-	URL_PREFIX = "/diamond-server/notify"
-	PROTOCOL   = "http://"
+	notifyURL = "/diamond-server/notify"
+	protocol  = "http://"
 )
 
-func notifyConfigInfoChange(dataId, group string) {
+func notifyConfigInfoChange(dataID, group string) {
 	nodes := getNodeAddress()
 	for _, addr := range nodes {
-		urlString := generateNotifyConfigInfoPath(dataId, group, addr)
+		urlString := generateNotifyConfigInfoPath(dataID, group, addr)
 		result, err := invokeURL(urlString)
 		log.Println("notify node and result", addr, result, err)
 	}
 }
 
-func generateNotifyConfigInfoPath(dataId, group, address string) string {
-	urlString := PROTOCOL + address + URL_PREFIX
-	urlString += "?method=notifyConfigInfo&dataId=" + dataId + "&group=" + group
+func generateNotifyConfigInfoPath(dataID, group, address string) string {
+	urlString := protocol + address + notifyURL
+	urlString += "?method=notifyConfigInfo&dataID=" + dataID + "&group=" + group
 	return urlString
 }
 

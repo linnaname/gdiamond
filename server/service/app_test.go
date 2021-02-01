@@ -1,12 +1,14 @@
 package service
 
 import (
-	"container/list"
 	"fmt"
 	"gdiamond/server/common"
+	"gdiamond/server/model"
+	"gdiamond/util/maputil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"testing"
+	"time"
 )
 
 type _SS struct {
@@ -50,20 +52,20 @@ func (s *_SS) TestFindConfigInfoPage() {
 	assert.NotNil(s.T(), page)
 	assert.Equal(s.T(), page.TotalCount, 1)
 
-	pEmptyDataId, err := FindConfigInfoPage(1, 10, "GDIADMOND", "")
+	pEmptyDataID, err := FindConfigInfoPage(1, 10, "GDIADMOND", "")
 	assert.NoError(s.T(), err)
-	assert.NotNil(s.T(), pEmptyDataId)
-	assert.Greater(s.T(), pEmptyDataId.TotalCount, 0)
+	assert.NotNil(s.T(), pEmptyDataID)
+	assert.Greater(s.T(), pEmptyDataID.TotalCount, 0)
 
 	pEmptyGroup, err := FindConfigInfoPage(1, 10, "", "gdiamond.test.vv")
 	assert.NoError(s.T(), err)
 	assert.NotNil(s.T(), pEmptyGroup)
 	assert.Greater(s.T(), pEmptyGroup.TotalCount, 0)
 
-	pEmptyGroupAndDataId, err := FindConfigInfoPage(1, 10, "", "")
+	pEmptyGroupAndDataID, err := FindConfigInfoPage(1, 10, "", "")
 	assert.NoError(s.T(), err)
-	assert.NotNil(s.T(), pEmptyGroupAndDataId)
-	assert.Greater(s.T(), pEmptyGroupAndDataId.TotalCount, 0)
+	assert.NotNil(s.T(), pEmptyGroupAndDataID)
+	assert.Greater(s.T(), pEmptyGroupAndDataID.TotalCount, 0)
 }
 
 func (s *_SS) TestFindConfigInfoLike() {
@@ -74,50 +76,23 @@ func (s *_SS) TestFindConfigInfoLike() {
 	assert.Greater(s.T(), page.TotalCount, 1)
 }
 
-func TestName(t *testing.T) {
-	nums := []int{-2, -1, 0, 3, 5, 6, 7, 9, 13, 14}
-	result := pairSums(nums, 12)
-	println(result)
+func TestGetConfigInfoPath(t *testing.T) {
+	filePath := GetConfigInfoPath("linna", "DEFAULT_GROUP")
+	assert.NotEmpty(t, filePath)
+	assert.Contains(t, filePath, "linna")
 }
 
-func pairSums(nums []int, target int) [][]int {
-	totalPair := 0
-	counter := make(map[int]int, len(nums))
-	l := list.New()
-	for _, num := range nums {
-		pairNum := target - num
-		cnt, ok := counter[pairNum]
+func TestUpdateMD5Cache(t *testing.T) {
+	assert.Equal(t, maputil.LengthOfSyncMap(cache), int64(0))
+	cInfo := model.NewConfigInfo("linna", "DEFAULT_GROUP", "gdiamond", time.Now())
+	UpdateMD5Cache(cInfo)
+	assert.Equal(t, maputil.LengthOfSyncMap(cache), int64(1))
+}
 
-		if !ok {
-			val, ok := counter[num]
-			if !ok {
-				val = 1
-			} else {
-				val += 1
-			}
-			counter[num] = val
-		} else {
-			pair := make([]int, 2)
-			pair[0] = num
-			pair[1] = pairNum
-			l.PushBack(pair)
-			totalPair++
-			if cnt == 1 {
-				delete(counter, pairNum)
-			} else {
-				cnt--
-				counter[pairNum] = cnt
-			}
-		}
-	}
-
-	pairs := make([][]int, totalPair)
-	for i := l.Front(); i != nil; i = i.Next() {
-		val := i.Value
-		pair, _ := val.([]int)
-		pairs[totalPair] = pair
-		totalPair--
-	}
-
-	return pairs
+func TestGetContentMD5(t *testing.T) {
+	assert.Equal(t, maputil.LengthOfSyncMap(cache), int64(0))
+	cInfo := model.NewConfigInfo("linna", "DEFAULT_GROUP", "gdiamond", time.Now())
+	UpdateMD5Cache(cInfo)
+	md5 := GetContentMD5("linna", "DEFAULT_GROUP")
+	assert.NotEmpty(t, md5)
 }

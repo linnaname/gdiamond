@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func addConfingInfo(config *model.ConfigInfo) error {
+func addConfigInfo(config *model.ConfigInfo) error {
 	stm, err := common.GDBConn.Prepare("INSERT INTO config_info (data_id,group_id,content,md5,gmt_create,gmt_modified) VALUES(?,?,?,?,?,?)")
 	if err != nil {
 		return err
@@ -33,20 +33,20 @@ func updateConfigInfo(config *model.ConfigInfo) error {
 	return nil
 }
 
-func findConfigInfo(dataId, group string) (*model.ConfigInfo, error) {
+func findConfigInfo(dataID, group string) (*model.ConfigInfo, error) {
 	stm, err := common.GDBConn.Prepare("select id,data_id,group_id,content,md5,gmt_modified from config_info where data_id=? and group_id=?")
 	if err != nil {
 		return nil, err
 	}
 	configInfo := &model.ConfigInfo{}
-	err = stm.QueryRow(dataId, group).Scan(&configInfo.ID, &configInfo.DataId, &configInfo.Group, &configInfo.Content, &configInfo.MD5, &configInfo.LastModified)
+	err = stm.QueryRow(dataID, group).Scan(&configInfo.ID, &configInfo.DataId, &configInfo.Group, &configInfo.Content, &configInfo.MD5, &configInfo.LastModified)
 	if err != nil {
 		return nil, err
 	}
 	return configInfo, nil
 }
 
-func findConfigInfoById(id int64) (*model.ConfigInfo, error) {
+func findConfigInfoByID(id int64) (*model.ConfigInfo, error) {
 	stm, err := common.GDBConn.Prepare("select id,data_id,group_id,content,md5,gmt_modified from config_info where id=?")
 	if err != nil {
 		return nil, err
@@ -59,10 +59,10 @@ func findConfigInfoById(id int64) (*model.ConfigInfo, error) {
 	return configInfo, nil
 }
 
-func findConfigInfoByDataId(pageNo, pageSize int, dataId string) (*model.Page, error) {
+func findConfigInfoByDataID(pageNo, pageSize int, dataID string) (*model.Page, error) {
 	page, err := FetchPage("select count(id) from config_info where data_id=?",
 		"select id,data_id,group_id,content,md5,gmt_modified from config_info where data_id=?",
-		pageNo, pageSize, dataId)
+		pageNo, pageSize, dataID)
 	if err != nil {
 		return nil, err
 	}
@@ -89,15 +89,15 @@ func findAllConfigInfo(pageNo, pageSize int) (*model.Page, error) {
 	return page, nil
 }
 
-func findAllConfigLike(pageNo, pageSize int, dataId, group string) (*model.Page, error) {
-	if dataId == "" && group == "" {
+func findAllConfigLike(pageNo, pageSize int, dataID, group string) (*model.Page, error) {
+	if dataID == "" && group == "" {
 		return findAllConfigInfo(pageNo, pageSize)
 	}
 
 	sqlCountRows := "select count(id) from config_info where "
 	sqlFetchRows := "select id,data_id,group_id,content,md5,gmt_modified from config_info where "
 	wasFirst := true
-	if dataId != "" {
+	if dataID != "" {
 		sqlCountRows += "data_id like ? "
 		sqlFetchRows += "data_id like ? "
 		wasFirst = false
@@ -112,10 +112,10 @@ func findAllConfigLike(pageNo, pageSize int, dataId, group string) (*model.Page,
 		}
 	}
 
-	if dataId != "" && group != "" {
-		return FetchPage(sqlCountRows, sqlFetchRows, pageNo, pageSize, generateLikeArgument(dataId), generateLikeArgument(group))
-	} else if dataId != "" {
-		return FetchPage(sqlCountRows, sqlFetchRows, pageNo, pageSize, generateLikeArgument(dataId))
+	if dataID != "" && group != "" {
+		return FetchPage(sqlCountRows, sqlFetchRows, pageNo, pageSize, generateLikeArgument(dataID), generateLikeArgument(group))
+	} else if dataID != "" {
+		return FetchPage(sqlCountRows, sqlFetchRows, pageNo, pageSize, generateLikeArgument(dataID))
 	} else if group != "" {
 		return FetchPage(sqlCountRows, sqlFetchRows, pageNo, pageSize, generateLikeArgument(group))
 	}
@@ -137,7 +137,6 @@ func removeConfigInfo(config *model.ConfigInfo) error {
 func generateLikeArgument(s string) string {
 	if strings.Index(s, "*") >= 0 {
 		return strings.ReplaceAll(s, "\\*", "%")
-	} else {
-		return "%" + s + "%"
 	}
+	return "%" + s + "%"
 }

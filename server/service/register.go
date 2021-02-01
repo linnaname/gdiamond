@@ -3,7 +3,6 @@ package service
 import (
 	"encoding/binary"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"gdiamond/common/namesrv"
 	"gdiamond/util/netutil"
@@ -15,6 +14,7 @@ import (
 	"time"
 )
 
+//Register  register gdiamond-server to nameserver
 type Register struct {
 }
 
@@ -25,6 +25,7 @@ func getNameServerAddressList() *singlylinkedlist.List {
 	return nameServerAddressList
 }
 
+//RegisterServerAll register gdiamond-server to all nameserver
 func (r *Register) RegisterServerAll() {
 	nameServerAddressList := getNameServerAddressList()
 	if nameServerAddressList != nil && !nameServerAddressList.Empty() {
@@ -84,7 +85,7 @@ func registerServer(namesrvAddr string, timeoutMills int, request namesrv.Reques
 	}
 
 	if resp.Code != namesrv.Success {
-		return errors.New(fmt.Sprintf("register wrong, res code: %v", resp.Code))
+		return fmt.Errorf("register wrong, res code: %v", resp.Code)
 	}
 	return nil
 }

@@ -7,6 +7,8 @@ import (
 	"gdiamond/server/model"
 )
 
+//FetchPage util for fetch data by page
+//page data need total count and total page so it  count rows sql, args will pass to count row  sql and fetch row sql
 func FetchPage(sqlCountRows, sqlFetchRows string, pageNo, pageSize int, args ...interface{}) (*model.Page, error) {
 	if pageSize <= 0 {
 		return nil, errors.New("pageSize can't greater than 0")
