@@ -27,7 +27,7 @@ const (
 
 func NewConfigure() (*Configure, error) {
 	filePath := fileutil.GetCurrentDirectory() + "/gdiamond"
-	err := fileutil.CreateDirIfNessary(filePath)
+	err := fileutil.CreateDirIfNecessary(filePath)
 	return &Configure{filePath: filePath, domainNameList: dll.New(), localFirst: false, configServerPort: DEFAULT_PORT, port: 1210,
 		onceTimeout: 2000, receiveWaitTime: 2000 * 5, retrieveDataRetryTimes: int(MaxUint>>1) / 10}, err
 }

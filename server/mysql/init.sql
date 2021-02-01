@@ -1,6 +1,6 @@
 --first you need to create database  diamond default character set utf8(create database diamond);
 --use diamond
---excute follow script to create table config_info
+--execute follow script to create table config_info
 
 drop table if exists config_info cascade;
 

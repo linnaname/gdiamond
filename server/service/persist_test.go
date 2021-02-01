@@ -25,13 +25,13 @@ func (s *_Suite) TearDownSuite() {
 }
 
 func (s *_Suite) TestAddConfingInfo() {
-	configInfo := &model.ConfigInfo{Group: "AAA_GROUP", DataId: "linna.com", Content: "song for linana", MD5: fmt.Sprintf("%x", md5.Sum([]byte("song for linana")))}
+	configInfo := &model.ConfigInfo{Group: "AAA_GROUP", DataID: "linna.com", Content: "song for linana", MD5: fmt.Sprintf("%x", md5.Sum([]byte("song for linana")))}
 	err := addConfigInfo(configInfo)
 	assert.NoError(s.T(), err)
 }
 
 func (s *_Suite) TestUpdateConfigInfo() {
-	configInfo := &model.ConfigInfo{Group: "DEFAULT_GROUP", DataId: "linname", Content: "I hate linnana too", MD5: fmt.Sprintf("%x", md5.Sum([]byte("I hate linnana too")))}
+	configInfo := &model.ConfigInfo{Group: "DEFAULT_GROUP", DataID: "linname", Content: "I hate linnana too", MD5: fmt.Sprintf("%x", md5.Sum([]byte("I hate linnana too")))}
 	err := updateConfigInfo(configInfo)
 	assert.NoError(s.T(), err)
 }
@@ -50,7 +50,7 @@ func (s *_Suite) TestFindConfigInfoById() {
 	configInfo, err := findConfigInfoByID(3)
 	assert.NoError(s.T(), err)
 	assert.NotNil(s.T(), configInfo)
-	assert.Equal(s.T(), configInfo.DataId, "linna")
+	assert.Equal(s.T(), configInfo.DataID, "linna")
 	assert.Equal(s.T(), configInfo.ID, int64(3))
 	assert.Equal(s.T(), configInfo.Content, "adafdasfdsa")
 	assert.Equal(s.T(), configInfo.Group, "DEFAULT_GROUP")
@@ -115,7 +115,7 @@ func (s *_Suite) TestFindAllConfigLikeGroupAndDataId() {
 }
 
 func (s *_Suite) TestRemoveConfigInfo() {
-	configInfo := &model.ConfigInfo{Group: "AAA_GROUP", DataId: "linna.com", Content: "song for linana", MD5: fmt.Sprintf("%x", md5.Sum([]byte("song for linana")))}
+	configInfo := &model.ConfigInfo{Group: "AAA_GROUP", DataID: "linna.com", Content: "song for linana", MD5: fmt.Sprintf("%x", md5.Sum([]byte("song for linana")))}
 	err := removeConfigInfo(configInfo)
 	assert.NoError(s.T(), err)
 }

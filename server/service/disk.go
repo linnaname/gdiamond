@@ -19,7 +19,7 @@ var modifyMarkCache sync.Map
 //create dir or file if necessary
 func SaveToDisk(info *model.ConfigInfo) error {
 	group := info.Group
-	dataID := info.DataId
+	dataID := info.DataID
 	cacheKey := generateCacheKey(group, dataID)
 	_, loaded := modifyMarkCache.LoadOrStore(cacheKey, true)
 	if !loaded {

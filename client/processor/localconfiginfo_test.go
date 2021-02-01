@@ -33,14 +33,14 @@ func (s *_S) TestStart() {
 
 func (s *_S) TestGetLocalConfigureInfomation() {
 	cacheData := configinfo.NewCacheData("linname", "DEFAULT_GROUP")
-	content, err := s.p.GetLocalConfigureInfomation(cacheData, false)
+	content, err := s.p.GetLocalConfigureInformation(cacheData, false)
 	assert.NoError(s.T(), err)
 	assert.Empty(s.T(), content)
 }
 
 func (s *_S) TestGetLocalConfigureInfomationForce() {
 	cacheData := configinfo.NewCacheData("linname", "DEFAULT_GROUP")
-	content, err := s.p.GetLocalConfigureInfomation(cacheData, true)
+	content, err := s.p.GetLocalConfigureInformation(cacheData, true)
 	assert.NoError(s.T(), err)
 	assert.Equal(s.T(), content, "I hate linnana too")
 	println(content)

@@ -5,19 +5,21 @@ import (
 	"time"
 )
 
-//simple cache with ttl
+//SimpleCache simple cache with ttl
 type SimpleCache struct {
 	//ttl for whole cache,not for single key, time unit:second
 	ttl   int64
 	cache sync.Map
 }
 
+//CacheEntry entry
 type CacheEntry struct {
 	//exipred timestamp
 	timestamp int64
 	value     interface{}
 }
 
+//New new
 func New(ttl int64) *SimpleCache {
 	cache := &SimpleCache{ttl: ttl}
 	return cache

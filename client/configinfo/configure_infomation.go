@@ -15,7 +15,7 @@ func NewConfigureInfomation() *ConfigureInfomation {
 
 func (c *ConfigureInfomation) String() string {
 	builder := strings.Builder{}
-	builder.WriteString("DataId: ")
+	builder.WriteString("DataID: ")
 	builder.WriteString(c.DataId)
 	builder.WriteString(", Group: ")
 	builder.WriteString(c.Group)

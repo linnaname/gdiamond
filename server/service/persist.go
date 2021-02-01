@@ -14,7 +14,7 @@ func addConfigInfo(config *model.ConfigInfo) error {
 		return err
 	}
 	timestamp := time.Now()
-	_, eErr := stm.Exec(config.DataId, config.Group, config.Content, config.MD5, timestamp, timestamp)
+	_, eErr := stm.Exec(config.DataID, config.Group, config.Content, config.MD5, timestamp, timestamp)
 	if eErr != nil {
 		return eErr
 	}
@@ -26,7 +26,7 @@ func updateConfigInfo(config *model.ConfigInfo) error {
 	if err != nil {
 		return err
 	}
-	_, eErr := stm.Exec(config.Content, config.MD5, config.LastModified, config.DataId, config.Group)
+	_, eErr := stm.Exec(config.Content, config.MD5, config.LastModified, config.DataID, config.Group)
 	if eErr != nil {
 		return eErr
 	}
@@ -39,7 +39,7 @@ func findConfigInfo(dataID, group string) (*model.ConfigInfo, error) {
 		return nil, err
 	}
 	configInfo := &model.ConfigInfo{}
-	err = stm.QueryRow(dataID, group).Scan(&configInfo.ID, &configInfo.DataId, &configInfo.Group, &configInfo.Content, &configInfo.MD5, &configInfo.LastModified)
+	err = stm.QueryRow(dataID, group).Scan(&configInfo.ID, &configInfo.DataID, &configInfo.Group, &configInfo.Content, &configInfo.MD5, &configInfo.LastModified)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func findConfigInfoByID(id int64) (*model.ConfigInfo, error) {
 		return nil, err
 	}
 	configInfo := &model.ConfigInfo{}
-	err = stm.QueryRow(id).Scan(&configInfo.ID, &configInfo.DataId, &configInfo.Group, &configInfo.Content, &configInfo.MD5, &configInfo.LastModified)
+	err = stm.QueryRow(id).Scan(&configInfo.ID, &configInfo.DataID, &configInfo.Group, &configInfo.Content, &configInfo.MD5, &configInfo.LastModified)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +127,7 @@ func removeConfigInfo(config *model.ConfigInfo) error {
 	if err != nil {
 		return err
 	}
-	_, eErr := stm.Exec(config.DataId, config.Group)
+	_, eErr := stm.Exec(config.DataID, config.Group)
 	if eErr != nil {
 		return eErr
 	}

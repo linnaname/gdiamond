@@ -9,15 +9,17 @@ import (
 	"path/filepath"
 )
 
+//SnapshotConfigInfoProcessor local snapshot file processor
 type SnapshotConfigInfoProcessor struct {
 	dir string //snapshot data dir
 }
 
+//NewSnapshotConfigInfoProcessor new
 func NewSnapshotConfigInfoProcessor(dir string) *SnapshotConfigInfoProcessor {
 	processor := &SnapshotConfigInfoProcessor{
 		dir: dir,
 	}
-	fileutil.CreateDirIfNessary(dir)
+	fileutil.CreateDirIfNecessary(dir)
 	return processor
 }
 
@@ -97,7 +99,7 @@ func (p *SnapshotConfigInfoProcessor) RemoveSnapshot(dataId, group string) {
 
 func (p *SnapshotConfigInfoProcessor) getTargetFile(dataId, group string) (*os.File, error) {
 	path := filepath.Join(p.dir, group)
-	fileutil.CreateDirIfNessary(path)
+	fileutil.CreateDirIfNecessary(path)
 	filePath := filepath.Join(path, dataId)
 	return fileutil.CreateFileIfNessary(filePath)
 }

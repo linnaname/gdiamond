@@ -30,25 +30,26 @@ import (
 )
 
 const (
-	WORD_SEPARATOR       = ","
-	LINE_SEPARATOR       = ";"
-	PROBE_MODIFY_REQUEST = "Probe-Modify-Request"
-	DATAID               = "dataId"
-	GROUP                = "group"
-	CONTENT              = "content"
-	IF_MODIFIED_SINCE    = "If-Modified-Since"
-	CONTENT_MD5          = "Content-MD5"
-	ACCEPT_ENCODING      = "Accept-Encoding"
-	CONTENT_ENCODING     = "Content-Encoding"
-	LAST_MODIFIED        = "Last-Modified"
-	SPACING_INTERVAL     = "client-spacing-interval"
-	DATA_DIR             = "data"     // local dir need to watch
-	SNAPSHOT_DIR         = "snapshot" // last time succeed snapshot  dir
-	GetConfigUrl         = "diamond-server/config"
-	PublishConfigUrl     = "diamond-server/publishConfig"
-	GetProbeModifyUrl    = "diamond-server/getProbeModify"
+	wordSeparator      = ","
+	lineSeparator      = ";"
+	probeModifyRequest = "Probe-Modify-Request"
+	dataID             = "dataId"
+	GROUP              = "group"
+	CONTENT            = "content"
+	IfModifiedSince    = "If-Modified-Since"
+	ContentMd5         = "Content-MD5"
+	AcceptEncoding     = "Accept-Encoding"
+	ContentEncoding    = "Content-Encoding"
+	LastModified       = "Last-Modified"
+	SpacingInterval    = "client-spacing-interval"
+	DataDir            = "data"     // local dir need to watch
+	SnapshotDir        = "snapshot" // last time succeed snapshot  dir
+	GetConfigUrl       = "diamond-server/config"
+	PublishConfigUrl   = "diamond-server/publishConfig"
+	GetProbeModifyUrl  = "diamond-server/getProbeModify"
 )
 
+//Subscriber client subscriber
 type Subscriber struct {
 	//lock to keep start and stop goroutine-safe
 	sync.Mutex
@@ -80,20 +81,18 @@ func newSubscriber(subscriberListener listener.SubscriberListener) (*Subscriber,
 	return s, nil
 }
 
-/**
-Start start subscriber
-1.start local file/last time succeed snapshot/server address processor
-2.random domain name index
-*/
+//Start start subscriber
+//start local file/last time succeed snapshot/server address processor
+//random domain name index
 func (s *Subscriber) Start() {
 	s.Lock()
 	s.localConfigInfoProcessor = processor.NewLocalConfigInfoProcessor()
-	s.localConfigInfoProcessor.Start(s.diamondConfigure.GetFilePath() + "/" + DATA_DIR)
+	s.localConfigInfoProcessor.Start(s.diamondConfigure.GetFilePath() + "/" + DataDir)
 
 	s.serverAddressProcessor = processor.NewServerAddressProcessor(s.diamondConfigure)
 	s.serverAddressProcessor.Start()
 
-	s.snapshotConfigInfoProcessor = processor.NewSnapshotConfigInfoProcessor(s.diamondConfigure.GetFilePath() + "/" + SNAPSHOT_DIR)
+	s.snapshotConfigInfoProcessor = processor.NewSnapshotConfigInfoProcessor(s.diamondConfigure.GetFilePath() + "/" + SnapshotDir)
 
 	s.randomDomainNamePos()
 	s.isRun = true
@@ -102,12 +101,10 @@ func (s *Subscriber) Start() {
 	s.Unlock()
 }
 
-/**
-Start start subscriber
-1.close local file/last time succeed snapshot/server address processor
-2.clear cache
-Is there a better way to close gracefully
-*/
+//Close close subscriber
+//1.close local file/last time succeed snapshot/server address processor
+//2.clear cache
+//Is there a better way to close gracefully???
 func (s *Subscriber) Close() {
 	s.Lock()
 	if !s.isRun {
@@ -123,14 +120,17 @@ func (s *Subscriber) Close() {
 	s.Unlock()
 }
 
+//GetSubscriberListener getter
 func (s *Subscriber) GetSubscriberListener() listener.SubscriberListener {
 	return s.subscriberListener
 }
 
+//SetSubscriberListener setter
 func (s *Subscriber) SetSubscriberListener(l listener.SubscriberListener) {
 	s.subscriberListener = l
 }
 
+//AddDataId add dataId to watch
 func (s *Subscriber) AddDataId(dataId, group string) {
 	if group == "" {
 		group = configinfo.DEFAULT_GROUP
@@ -161,15 +161,7 @@ func (s *Subscriber) AddDataId(dataId, group string) {
 	}
 }
 
-func (s *Subscriber) loadCacheContentFromDiskLocal(cacheData *configinfo.CacheData) string {
-	content, _ := s.localConfigInfoProcessor.GetLocalConfigureInfomation(cacheData, true)
-	if content != "" {
-		return content
-	}
-	c, _ := s.snapshotConfigInfoProcessor.GetConfigInfomation(cacheData.DataId(), cacheData.Group())
-	return c
-}
-
+//RemoveDataId delete dataId to watch
 func (s *Subscriber) RemoveDataId(dataId, group string) {
 	if group == "" {
 		group = configinfo.DEFAULT_GROUP
@@ -188,6 +180,7 @@ func (s *Subscriber) RemoveDataId(dataId, group string) {
 	}
 }
 
+//GetDataIds get dataIds on watching
 func (s *Subscriber) GetDataIds() *hashset.Set {
 	keys := hashset.New()
 	s.cache.Range(func(k, v interface{}) bool {
@@ -197,13 +190,14 @@ func (s *Subscriber) GetDataIds() *hashset.Set {
 	return keys
 }
 
-func (s *Subscriber) GetConfigureInfomation(dataId, group string, timeout int) string {
+//GetConfigureInformation implement method
+func (s *Subscriber) GetConfigureInformation(dataId, group string, timeout int) string {
 	if group == "" {
 		group = configinfo.DEFAULT_GROUP
 	}
 	cacheData := s.getCacheData(dataId, group)
 	// 优先使用本地配置
-	localConfig, err := s.localConfigInfoProcessor.GetLocalConfigureInfomation(cacheData, true)
+	localConfig, err := s.localConfigInfoProcessor.GetLocalConfigureInformation(cacheData, true)
 	if localConfig != "" {
 		cacheData.IncrementFetchCountAndGet()
 		s.saveSnapshot(dataId, group, localConfig)
@@ -221,24 +215,27 @@ func (s *Subscriber) GetConfigureInfomation(dataId, group string, timeout int) s
 	return result
 }
 
-func (s *Subscriber) GetAvailableConfigureInfomation(dataId, group string, timeout int) string {
+//GetAvailableConfigureInformation  implement method
+func (s *Subscriber) GetAvailableConfigureInformation(dataId, group string, timeout int) string {
 	// 尝试先从本地和网络获取配置信息
-	result := s.GetConfigureInfomation(dataId, group, timeout)
+	result := s.GetConfigureInformation(dataId, group, timeout)
 	if result != "" {
 		return result
 	}
 	return s.getSnapshotConfiginfomation(dataId, group)
 }
 
-func (s *Subscriber) GetAvailableConfigureInfomationFromSnapshot(dataId, group string, timeout int) string {
+//GetAvailableConfigureInformationFromSnapshot implement method
+func (s *Subscriber) GetAvailableConfigureInformationFromSnapshot(dataId, group string, timeout int) string {
 	result := s.getSnapshotConfiginfomation(dataId, group)
 	if result != "" {
 		return result
 	}
-	return s.GetConfigureInfomation(dataId, group, timeout)
+	return s.GetConfigureInformation(dataId, group, timeout)
 }
 
-func (s *Subscriber) PublishConfigureInfomation(dataId, group, content string) error {
+//PublishConfigureInformation implement method
+func (s *Subscriber) PublishConfigureInformation(dataId, group, content string) error {
 	if !s.isRun {
 		return errors.New("subscriber isn't running can't publish config info")
 	}
@@ -273,9 +270,9 @@ func (s *Subscriber) PublishConfigureInfomation(dataId, group, content string) e
 			s.rotateToNextDomain()
 			continue
 		}
-		domainNamePort := urlutil.GetUrl(domainName.(string), s.diamondConfigure.GetPort(), PublishConfigUrl)
+		domainNamePort := urlutil.GetURL(domainName.(string), s.diamondConfigure.GetPort(), PublishConfigUrl)
 		params := url.Values{}
-		params.Set(DATAID, dataId)
+		params.Set(dataID, dataId)
 		params.Set(GROUP, group)
 		params.Set(CONTENT, content)
 		req, err := http.NewRequest("POST", domainNamePort, ioutil.NopCloser(strings.NewReader(params.Encode())))
@@ -293,14 +290,22 @@ func (s *Subscriber) PublishConfigureInfomation(dataId, group, content string) e
 		statusCode := resp.StatusCode
 		if statusCode == http.StatusOK {
 			return nil
-		} else {
-			log.Println("publish config info timeoutHTTP State: ", statusCode)
-			s.rotateToNextDomain()
 		}
+		log.Println("publish config info timeoutHTTP State: ", statusCode)
+		s.rotateToNextDomain()
 		resp.Body.Close()
 	}
 
-	return errors.New(fmt.Sprintf("publish config info timeout:%v", timeout))
+	return fmt.Errorf("publish config info timeout:%v", timeout)
+}
+
+func (s *Subscriber) loadCacheContentFromDiskLocal(cacheData *configinfo.CacheData) string {
+	content, _ := s.localConfigInfoProcessor.GetLocalConfigureInformation(cacheData, true)
+	if content != "" {
+		return content
+	}
+	c, _ := s.snapshotConfigInfoProcessor.GetConfigInfomation(cacheData.DataId(), cacheData.Group())
+	return c
 }
 
 /**
@@ -345,7 +350,7 @@ func (s *Subscriber) checkDiamondServerConfigInfo() error {
 	// 对于每个发生变化的DataID，都请求一次对应的配置信息
 	for _, freshDataIdGroupPair := range updateDataIdGroupPairs.Values() {
 		freshDataIdGroupPairStr := freshDataIdGroupPair.(string)
-		middleIndex := strings.Index(freshDataIdGroupPairStr, WORD_SEPARATOR)
+		middleIndex := strings.Index(freshDataIdGroupPairStr, wordSeparator)
 		if middleIndex == -1 {
 			continue
 		}
@@ -446,7 +451,7 @@ func (s *Subscriber) getConfigureInfomation(dataId, group string, timeout int, s
 			s.rotateToNextDomain()
 			continue
 		}
-		domainNamePort := urlutil.GetUrl(domainName.(string), s.diamondConfigure.GetPort(), GetConfigUrl)
+		domainNamePort := urlutil.GetURL(domainName.(string), s.diamondConfigure.GetPort(), GetConfigUrl)
 		//params := url.Values{}
 		//params.Set(DATAID, dataId)
 		//params.Set(GROUP, group)
@@ -456,18 +461,18 @@ func (s *Subscriber) getConfigureInfomation(dataId, group string, timeout int, s
 			continue
 		}
 		q := req.URL.Query()
-		q.Add(DATAID, dataId)
+		q.Add(dataID, dataId)
 		q.Add(GROUP, group)
 		req.URL.RawQuery = q.Encode()
 		if skipContentCache && cacheData != nil {
 			if cacheData.GetLastModifiedHeader() != "" {
-				req.Header.Set(IF_MODIFIED_SINCE, cacheData.GetLastModifiedHeader())
+				req.Header.Set(IfModifiedSince, cacheData.GetLastModifiedHeader())
 			}
 			if cacheData.MD5() != "" {
-				req.Header.Set(CONTENT_MD5, cacheData.MD5())
+				req.Header.Set(ContentMd5, cacheData.MD5())
 			}
 		}
-		req.Header.Set(ACCEPT_ENCODING, "gzip,deflate")
+		req.Header.Set(AcceptEncoding, "gzip,deflate")
 		resp, err := client.Do(req)
 		if err != nil {
 			//TODO error 和 status异常一致吗？
@@ -499,7 +504,7 @@ func (s *Subscriber) getConfigureInfomation(dataId, group string, timeout int, s
 
 	pos := atomic.LoadInt64(&s.domainNamePos)
 	domainName, _ := s.diamondConfigure.GetDomainNameList().Get(int(pos))
-	return "", errors.New(fmt.Sprintf("获取修改过的DataID列表超时:%v, 超时时间为:%v", domainName, timeout))
+	return "", fmt.Errorf("获取修改过的DataID列表超时:%v, 超时时间为:%v", domainName, timeout)
 }
 
 /**
@@ -509,7 +514,7 @@ func (s *Subscriber) getConfigureInfomation(dataId, group string, timeout int, s
  */
 func (s *Subscriber) getNotModified(dataId string, cacheData *configinfo.CacheData, resp *http.Response) (string, error) {
 	header := resp.Header
-	md5 := header.Get(CONTENT_MD5)
+	md5 := header.Get(ContentMd5)
 	if md5 == "" {
 		return "", errors.New("RP_NO_CHANGE返回的结果中没有MD5码")
 	}
@@ -517,12 +522,12 @@ func (s *Subscriber) getNotModified(dataId string, cacheData *configinfo.CacheDa
 		lastMd5 := cacheData.MD5()
 		cacheData.SetMD5("")
 		cacheData.SetLastModifiedHeader("")
-		return "", errors.New(fmt.Sprintf("MD5码校验对比出错,DataID为:[%v],上次MD5为:[%v],本次MD5为:[%v]", dataId, lastMd5, md5))
+		return "", fmt.Errorf("MD5码校验对比出错,DataID为:[%v],上次MD5为:[%v],本次MD5为:[%v]", dataId, lastMd5, md5)
 	}
 
 	cacheData.SetMD5(md5)
 	s.changeSpacingInterval(header)
-	log.Println("DataId: " + dataId + ", 对应的configInfo没有变化")
+	log.Println("DataID: " + dataId + ", 对应的configInfo没有变化")
 	return "", nil
 }
 
@@ -538,14 +543,14 @@ func (s *Subscriber) getSuccess(dataId, group string, cacheData *configinfo.Cach
 		return "", errors.New("RP_OK获取了错误的配置信息")
 	}
 	header := resp.Header
-	md5 := header.Get(CONTENT_MD5)
+	md5 := header.Get(ContentMd5)
 	if md5 == "" {
 		return "", errors.New("RP_OK返回的结果中没有MD5码, " + configInfo)
 	}
 	if !checkContent(configInfo, md5) {
-		return "", errors.New(fmt.Sprintf("配置信息的MD5码校验出错,DataID为:[%s]配置信息为:[%s]MD5为:[%s]", dataId, configInfo, md5))
+		return "", fmt.Errorf("配置信息的MD5码校验出错,DataID为:[%s]配置信息为:[%s]MD5为:[%s]", dataId, configInfo, md5)
 	}
-	lastModified := header.Get(LAST_MODIFIED)
+	lastModified := header.Get(LastModified)
 	if lastModified == "" {
 		return "", errors.New("RP_OK返回的结果中没有lastModifiedHeader")
 	}
@@ -574,7 +579,7 @@ func (s *Subscriber) getSuccess(dataId, group string, cacheData *configinfo.Cach
  * 设置新的消息轮询间隔时间
  */
 func (s *Subscriber) changeSpacingInterval(header http.Header) {
-	spacingIntervalHeaders := header.Get(SPACING_INTERVAL)
+	spacingIntervalHeaders := header.Get(SpacingInterval)
 	interval, err := strconv.Atoi(spacingIntervalHeaders)
 	if err != nil {
 		s.diamondConfigure.SetPollingIntervalTime(int64(interval))
@@ -665,7 +670,7 @@ func (s *Subscriber) getLocalConfigureInfomation(cacheData *configinfo.CacheData
 	if !s.isRun {
 		return "", errors.New("DiamondSubscriber不在运行状态中，无法获取本地ConfigureInfomation")
 	}
-	return s.localConfigInfoProcessor.GetLocalConfigureInfomation(cacheData, false)
+	return s.localConfigInfoProcessor.GetLocalConfigureInformation(cacheData, false)
 }
 
 func (s *Subscriber) checkUpdateDataIds(timeout int) (*hashset.Set, error) {
@@ -685,10 +690,10 @@ func (s *Subscriber) checkUpdateDataIds(timeout int) (*hashset.Set, error) {
 		client := &http.Client{Timeout: time.Duration(onceTimeOut) * time.Millisecond}
 		pos := atomic.LoadInt64(&s.domainNamePos)
 		domainName, _ := s.diamondConfigure.GetDomainNameList().Get(int(pos))
-		domainNamePort := urlutil.GetUrl(domainName.(string), s.diamondConfigure.GetPort(), GetProbeModifyUrl)
+		domainNamePort := urlutil.GetURL(domainName.(string), s.diamondConfigure.GetPort(), GetProbeModifyUrl)
 
 		params := url.Values{}
-		params.Set(PROBE_MODIFY_REQUEST, probeUpdateString)
+		params.Set(probeModifyRequest, probeUpdateString)
 		req, err := http.NewRequest("POST", domainNamePort, strings.NewReader(params.Encode()))
 		if err != nil {
 			log.Println("Can't NewRequest", err)
@@ -716,7 +721,7 @@ func (s *Subscriber) checkUpdateDataIds(timeout int) (*hashset.Set, error) {
 
 	pos := atomic.LoadInt64(&s.domainNamePos)
 	domainName, _ := s.diamondConfigure.GetDomainNameList().Get(int(pos))
-	return nil, errors.New(fmt.Sprintf("获取修改过的DataID列表超时:%v, 超时时间为:%v", domainName, timeout))
+	return nil, fmt.Errorf("获取修改过的DataID列表超时:%v, 超时时间为:%v", domainName, timeout)
 }
 
 func (s *Subscriber) getProbeUpdateString() string {
@@ -743,13 +748,13 @@ func (s *Subscriber) getProbeUpdateString() string {
 			}
 			if !data.UseLocalConfigInfo() {
 				probeModifyBuilder.WriteString(dataId)
-				probeModifyBuilder.WriteString(WORD_SEPARATOR)
+				probeModifyBuilder.WriteString(wordSeparator)
 
 				if data.Group() != "" {
 					probeModifyBuilder.WriteString(data.Group())
-					probeModifyBuilder.WriteString(WORD_SEPARATOR)
+					probeModifyBuilder.WriteString(wordSeparator)
 				} else {
-					probeModifyBuilder.WriteString(WORD_SEPARATOR)
+					probeModifyBuilder.WriteString(wordSeparator)
 				}
 
 				if data.MD5() != "" {
@@ -757,7 +762,7 @@ func (s *Subscriber) getProbeUpdateString() string {
 				}
 
 				if l > 1 {
-					probeModifyBuilder.WriteString(LINE_SEPARATOR)
+					probeModifyBuilder.WriteString(lineSeparator)
 				}
 			}
 			return true
@@ -892,7 +897,7 @@ func convertStringToSet(modifiedDataIdsString string) *hashset.Set {
 	}
 
 	modifiedDataIdSet := hashset.New()
-	modifiedDataIdStrings := strings.Split(modifiedDataIdsString, LINE_SEPARATOR)
+	modifiedDataIdStrings := strings.Split(modifiedDataIdsString, lineSeparator)
 	for _, modifiedDataIdString := range modifiedDataIdStrings {
 		if modifiedDataIdString != "" && modifiedDataIdsString != "OK" {
 			modifiedDataIdSet.Add(modifiedDataIdString)
@@ -905,9 +910,8 @@ func checkContent(configInfo, md5 string) bool {
 	realMd5 := common.GetMd5(configInfo)
 	if realMd5 == "" {
 		return md5 == ""
-	} else {
-		return realMd5 == md5
 	}
+	return realMd5 == md5
 }
 
 func getContent(resp *http.Response) string {
@@ -945,7 +949,7 @@ func getContent(resp *http.Response) string {
 }
 
 func isZipContent(header http.Header) bool {
-	acceptEncoding := header.Get(CONTENT_ENCODING)
+	acceptEncoding := header.Get(ContentEncoding)
 	if acceptEncoding != "" {
 		if strings.Index(strings.ToLower(acceptEncoding), "gzip") > -1 {
 			return true

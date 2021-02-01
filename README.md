@@ -39,3 +39,15 @@ diamond和[disconf](https://github.com/knightliao/disconf)
 
 ## Contributing ##
 虽然这是我自己为了把Golang重新捡起来写的一个轮子，但是还是欢迎感兴趣的小伙参与项目贡献！但Golang的生态确实还不太完善，如果您感兴趣欢迎联系我，也可以额提交PR修复一个bug，或者新建 Issue 讨论新特性或者变更。
+
+## TODO List ##
+* localfile测试和localfile变更监听测试
+* 日志系统完善
+* client 和 server从namesrv获取全量可用server逻辑
+* client user api简化
+* 管理页面
+* namespace（租户）增加
+* daily/pre/production环境增加
+* 集群环境性能测试
+* mysql连接、gnet连接优化
+* namesrv可使用vip + 域名代替？

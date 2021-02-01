@@ -12,6 +12,7 @@ import (
 	"time"
 )
 
+//LocalConfigInfoProcessor local file processor
 type LocalConfigInfoProcessor struct {
 	sync.Mutex
 	rootPath   string
@@ -19,13 +20,16 @@ type LocalConfigInfoProcessor struct {
 	existFiles map[string] /*filePath*/ int64 /*version*/
 }
 
-const BASE_DIR = "config-data"
+//BaseDir local file base dir
+const BaseDir = "config-data"
 
+//NewLocalConfigInfoProcessor new
 func NewLocalConfigInfoProcessor() *LocalConfigInfoProcessor {
 	p := &LocalConfigInfoProcessor{isRun: false, existFiles: make(map[string]int64)}
 	return p
 }
 
+//Start setup processor and create local file dir
 func (p *LocalConfigInfoProcessor) Start(rootPath string) {
 	p.Lock()
 	if p.isRun {
@@ -39,6 +43,7 @@ func (p *LocalConfigInfoProcessor) Start(rootPath string) {
 	p.Unlock()
 }
 
+//Stop stop processor
 func (p *LocalConfigInfoProcessor) Stop() {
 	p.Lock()
 	if !p.isRun {
@@ -48,10 +53,8 @@ func (p *LocalConfigInfoProcessor) Stop() {
 	p.Unlock()
 }
 
-/**
- * 获取本地配置
- */
-func (p *LocalConfigInfoProcessor) GetLocalConfigureInfomation(cacheData *configinfo.CacheData, force bool) (string, error) {
+//GetLocalConfigureInformation get config info from local file
+func (p *LocalConfigInfoProcessor) GetLocalConfigureInformation(cacheData *configinfo.CacheData, force bool) (string, error) {
 	filePath := p.getFilePath(cacheData.DataId(), cacheData.Group())
 	_, ok := p.existFiles[filePath]
 	if !ok {
@@ -81,15 +84,14 @@ func (p *LocalConfigInfoProcessor) GetLocalConfigureInfomation(cacheData *config
 		cacheData.SetUseLocalConfigInfo(true)
 		log.Println("本地配置数据发生变化, dataId:" + cacheData.DataId() + ", group:" + cacheData.Group())
 		return content, nil
-	} else {
-		cacheData.SetUseLocalConfigInfo(true)
-		log.Println("本地配置数据没有发生变化, dataId:" + cacheData.DataId() + ", group:" + cacheData.Group())
-		return "", nil
 	}
+	cacheData.SetUseLocalConfigInfo(true)
+	log.Println("本地配置数据没有发生变化, dataId:" + cacheData.DataId() + ", group:" + cacheData.Group())
+	return "", nil
 }
 
 func initDataDir(rootPath string) {
-	fileutil.CreateDirIfNessary(rootPath)
+	fileutil.CreateDirIfNecessary(rootPath)
 }
 
 func (p *LocalConfigInfoProcessor) startCheckLocalDir(filePath string) error {
@@ -121,14 +123,14 @@ func (p *LocalConfigInfoProcessor) processEvents(e fsnotify.Event) {
 
 	if e.Op&fsnotify.Create == fsnotify.Create || e.Op&fsnotify.Write == fsnotify.Write {
 		log.Println("创建或写入文件 : ", e.Name)
-		if BASE_DIR != grandpaDir {
+		if BaseDir != grandpaDir {
 			log.Println("无效的文件进入监控目录: " + e.Name)
 			return
 		}
 		p.existFiles[e.Name] = time.Now().Unix()
 	} else if e.Op&fsnotify.Remove == fsnotify.Remove {
 		log.Println("delete file : ", e.Name)
-		if BASE_DIR == grandpaDir {
+		if BaseDir == grandpaDir {
 			// 删除的是文件
 			delete(p.existFiles, e.Name)
 		} else {
@@ -150,7 +152,7 @@ func (p *LocalConfigInfoProcessor) getFilePath(dataId, group string) string {
 	filePathBuilder := strings.Builder{}
 	filePathBuilder.WriteString(p.rootPath)
 	filePathBuilder.WriteString("/")
-	filePathBuilder.WriteString(BASE_DIR)
+	filePathBuilder.WriteString(BaseDir)
 	filePathBuilder.WriteString("/")
 	filePathBuilder.WriteString(group)
 	filePathBuilder.WriteString("/")

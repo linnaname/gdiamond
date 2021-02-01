@@ -8,16 +8,19 @@ import (
 	"sync"
 )
 
+//SubscriberListener listener
 type SubscriberListener interface {
 	//implement this method to handle notify mananger listener ManagerListener
 	ReceiveConfigInfo(configureInfomation *configinfo.ConfigureInfomation)
 }
 
+//DefaultSubscriberListener default listener
 type DefaultSubscriberListener struct {
 	// k:dataId + group  v:listeners  v is list
 	allListeners sync.Map
 }
 
+//NewDefaultSubscriberListener new
 func NewDefaultSubscriberListener() DefaultSubscriberListener {
 	dl := DefaultSubscriberListener{}
 	return dl
@@ -49,10 +52,7 @@ func (d DefaultSubscriberListener) ReceiveConfigInfo(configureInfomation *config
 	})
 }
 
-/**
-*AddManagerListeners
- If dataId or addListeners is empty it do nothing,if group is empty it will be assign to DEFAULT_GROUP
-*/
+//AddManagerListeners If dataId or addListeners is empty it do nothing,if group is empty it will be assign to DEFAULT_GROUP
 func (d *DefaultSubscriberListener) AddManagerListeners(dataId, group string, addListeners *singlylinkedlist.List) {
 	if dataId == "" || addListeners.Empty() {
 		return
@@ -74,10 +74,7 @@ func (d *DefaultSubscriberListener) AddManagerListeners(dataId, group string, ad
 	})
 }
 
-/**
-* RemoveManagerListeners remove all listener of dataId/group
-  If dataId is empty it do nothing,if group is empty it will be assign to DEFAULT_GROUP
-*/
+//RemoveManagerListeners remove all listener of dataId/group  If dataId is empty it do nothing,if group is empty it will be assign to DEFAULT_GROUP
 func (d *DefaultSubscriberListener) RemoveManagerListeners(dataId, group string) {
 	if dataId == "" {
 		return

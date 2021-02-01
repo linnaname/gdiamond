@@ -33,7 +33,7 @@ func TestGetContent(t *testing.T) {
 	content = getContent(resp)
 	assert.Empty(t, content)
 
-	h.Set(CONTENT_ENCODING, "gzip")
+	h.Set(ContentEncoding, "gzip")
 	var b bytes.Buffer
 	gz := gzip.NewWriter(&b)
 	gz.Write([]byte("gzip"))
@@ -44,11 +44,11 @@ func TestGetContent(t *testing.T) {
 
 func TestIsZipContent(t *testing.T) {
 	h := http.Header{}
-	h.Set(CONTENT_ENCODING, "gzip")
+	h.Set(ContentEncoding, "gzip")
 	assert.True(t, isZipContent(h))
-	h.Set(CONTENT_ENCODING, "zip")
+	h.Set(ContentEncoding, "zip")
 	assert.False(t, isZipContent(h))
-	h.Set(CONTENT_ENCODING, "")
+	h.Set(ContentEncoding, "")
 	assert.False(t, isZipContent(h))
 }
 
@@ -121,16 +121,16 @@ func (s *_S) TestRemoveDataId() {
 }
 
 func (s *_S) TestGetConfigureInfomation() {
-	content := s.s.GetConfigureInfomation("linna", "DEFAULT_GROUP", 1000)
+	content := s.s.GetConfigureInformation("linna", "DEFAULT_GROUP", 1000)
 	assert.NotEmpty(s.T(), content)
 }
 
 func (s *_S) TestGetAvailableConfigureInfomation() {
-	content := s.s.GetAvailableConfigureInfomation("linna", "DEFAULT_GROUP", 1000)
+	content := s.s.GetAvailableConfigureInformation("linna", "DEFAULT_GROUP", 1000)
 	assert.NotEmpty(s.T(), content)
 }
 
 func (s *_S) TestGetAvailableConfigureInfomationFromSnapshot() {
-	content := s.s.GetAvailableConfigureInfomationFromSnapshot("linna", "DEFAULT_GROUP", 1000)
+	content := s.s.GetAvailableConfigureInformationFromSnapshot("linna", "DEFAULT_GROUP", 1000)
 	assert.NotEmpty(s.T(), content)
 }

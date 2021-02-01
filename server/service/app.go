@@ -150,7 +150,7 @@ func GetCache(dataID, group string) *model.ConfigInfo {
 func UpdateMD5Cache(configInfo *model.ConfigInfo) {
 	locker.Lock()
 	defer locker.Unlock()
-	key := generateMD5CacheKey(configInfo.DataId, configInfo.Group)
+	key := generateMD5CacheKey(configInfo.DataID, configInfo.Group)
 	md5 := common.GetMd5(configInfo.Content)
 	configInfo.MD5 = md5
 	cache.Store(key, configInfo)

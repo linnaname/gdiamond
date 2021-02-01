@@ -43,21 +43,21 @@ func TestDefaultManager_Close(t *testing.T) {
 
 func TestDefaultManager_GetConfigureInfomation(t *testing.T) {
 	dm := NewManager("linna", "DEFAULT_GROUP", A{})
-	content := dm.GetConfigureInfomation(1000)
+	content := dm.GetConfigureInformation(1000)
 	assert.NotEmpty(t, content)
 	fmt.Println(content)
 }
 
 func TestDefaultManager_GetAvailableConfigureInfomation(t *testing.T) {
 	dm := NewManager("linna", "DEFAULT_GROUP", A{})
-	content := dm.GetAvailableConfigureInfomation(1000)
+	content := dm.GetAvailableConfigureInformation(1000)
 	assert.NotEmpty(t, content)
 	fmt.Println(content)
 }
 
 func TestDefaultManager_GetAvailableConfigureInfomationFromSnapshot(t *testing.T) {
 	dm := NewManager("linna", "DEFAULT_GROUP", A{})
-	content := dm.GetAvailableConfigureInfomationFromSnapshot(1000)
+	content := dm.GetAvailableConfigureInformationFromSnapshot(1000)
 	assert.NotEmpty(t, content)
 	fmt.Println(content)
 }

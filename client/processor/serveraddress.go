@@ -23,23 +23,26 @@ import (
 )
 
 const (
-	DEFAULT_DOMAINNAME       = "127.0.0.1"
-	DAILY_DOMAINNAME         = "127.0.0.1"
-	CONFIG_HTTP_URI_FILE     = "url" /** 获取ServerAddress的配置uri */
-	asynAcquireIntervalInSec = 300
+	defaultDomainName         = "127.0.0.1"
+	dailyDomainName           = "127.0.0.1"
+	configHTTPURIFile         = "url" /** 获取ServerAddress的配置uri */
+	asyncAcquireIntervalInSec = 300
 )
 
+//ServerAddressProcessor name server address processor
 type ServerAddressProcessor struct {
 	sync.Mutex
 	diamondConfigure *configinfo.Configure
 	isRun            bool
 }
 
+//NewServerAddressProcessor new
 func NewServerAddressProcessor(diamondConfigure *configinfo.Configure) *ServerAddressProcessor {
 	p := &ServerAddressProcessor{diamondConfigure: diamondConfigure, isRun: false}
 	return p
 }
 
+//Start setup processor
 func (p *ServerAddressProcessor) Start() {
 	p.Lock()
 	if p.isRun || p.diamondConfigure == nil {
@@ -55,6 +58,7 @@ func (p *ServerAddressProcessor) Start() {
 	p.Unlock()
 }
 
+//Stop stop processor
 func (p *ServerAddressProcessor) Stop() {
 	p.Lock()
 	if !p.isRun {
@@ -152,17 +156,17 @@ func (p *ServerAddressProcessor) acquireServerAddressOnce(acquireCount int) bool
 		port = p.diamondConfigure.GetConfigServerPort()
 	} else {
 		if acquireCount == 0 {
-			configServerAddress = DEFAULT_DOMAINNAME
+			configServerAddress = defaultDomainName
 			port = configinfo.DEFAULT_PORT
 		} else {
-			configServerAddress = DAILY_DOMAINNAME
+			configServerAddress = dailyDomainName
 			port = configinfo.DEFAULT_PORT
 		}
 	}
 	onceTimeOut := p.diamondConfigure.GetOnceTimeout()
 	client := &http.Client{Timeout: time.Duration(onceTimeOut) * time.Millisecond}
-	apiUrl := urlutil.GetUrl(configServerAddress, port, CONFIG_HTTP_URI_FILE)
-	req, err := http.NewRequest("GET", apiUrl, nil)
+	apiURL := urlutil.GetURL(configServerAddress, port, configHTTPURIFile)
+	req, err := http.NewRequest("GET", apiURL, nil)
 	if err != nil {
 		log.Println("NewRequest error", err)
 		return false
@@ -200,7 +204,7 @@ func (p *ServerAddressProcessor) acquireServerAddressOnce(acquireCount int) bool
 }
 
 func (p *ServerAddressProcessor) asynAcquireServerAddress() {
-	ticker := time.NewTicker(time.Second * time.Duration(asynAcquireIntervalInSec))
+	ticker := time.NewTicker(time.Second * time.Duration(asyncAcquireIntervalInSec))
 	go func() {
 		defer ticker.Stop()
 		for {
