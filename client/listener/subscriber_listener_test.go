@@ -61,7 +61,7 @@ func (s *_S) TestDefaultSubscriberListener_ReceiveConfigInfo() {
 	listeners.Add(TestAMangerListener{})
 	listeners.Add(TestBMangerListener{})
 	s.dsl.AddManagerListeners("linnana", "DEFAULT_GROUP", listeners)
-	configureInfomation := configinfo.NewConfigureInfomation()
+	configureInfomation := configinfo.NewConfigureInformation()
 	configureInfomation.Group = "DEFAULT_GROUP"
 	configureInfomation.DataId = "linnana"
 	configureInfomation.ConfigureInfo = "content"

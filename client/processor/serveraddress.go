@@ -157,10 +157,10 @@ func (p *ServerAddressProcessor) acquireServerAddressOnce(acquireCount int) bool
 	} else {
 		if acquireCount == 0 {
 			configServerAddress = defaultDomainName
-			port = configinfo.DEFAULT_PORT
+			port = configinfo.DefaultPort
 		} else {
 			configServerAddress = dailyDomainName
-			port = configinfo.DEFAULT_PORT
+			port = configinfo.DefaultPort
 		}
 	}
 	onceTimeOut := p.diamondConfigure.GetOnceTimeout()

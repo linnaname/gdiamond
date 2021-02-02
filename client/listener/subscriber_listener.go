@@ -11,7 +11,7 @@ import (
 //SubscriberListener listener
 type SubscriberListener interface {
 	//implement this method to handle notify mananger listener ManagerListener
-	ReceiveConfigInfo(configureInfomation *configinfo.ConfigureInfomation)
+	ReceiveConfigInfo(configureInfomation *configinfo.ConfigureInformation)
 }
 
 //DefaultSubscriberListener default listener
@@ -28,7 +28,7 @@ func NewDefaultSubscriberListener() DefaultSubscriberListener {
 
 //ReceiveConfigInfo notify all listener which implement ManagerListener
 //it's a pointer receiver,   pointer receiver can't invoke   ReceiveConfigInfo in subsriber
-func (d DefaultSubscriberListener) ReceiveConfigInfo(configureInfomation *configinfo.ConfigureInfomation) {
+func (d DefaultSubscriberListener) ReceiveConfigInfo(configureInfomation *configinfo.ConfigureInformation) {
 	dataId := configureInfomation.DataId
 	group := configureInfomation.Group
 
@@ -84,7 +84,7 @@ func (d *DefaultSubscriberListener) RemoveManagerListeners(dataId, group string)
 }
 
 //notify listener async
-func notifyListener(configureInfomation *configinfo.ConfigureInfomation, listener ManagerListener) error {
+func notifyListener(configureInfomation *configinfo.ConfigureInformation, listener ManagerListener) error {
 	if listener == nil {
 		return errors.New("listener is nil")
 	}
@@ -102,7 +102,7 @@ func notifyListener(configureInfomation *configinfo.ConfigureInfomation, listene
 //concat dataId and group to key
 func makeKey(dataId, group string) string {
 	if group == "" {
-		group = configinfo.DEFAULT_GROUP
+		group = configinfo.DefaultGroup
 	}
 	return dataId + "_" + group
 }

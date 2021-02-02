@@ -5,6 +5,7 @@ import (
 	dll "github.com/emirpasic/gods/lists/doublylinkedlist"
 )
 
+//Configure client configure
 type Configure struct {
 	filePath               string // 本地数据保存路径
 	domainNameList         *dll.List
@@ -19,69 +20,62 @@ type Configure struct {
 }
 
 const (
-	DEFAULT_PORT          = 8080
-	MaxUint               = ^uint(0)
-	POLLING_INTERVAL_TIME = 15 // 秒
-	DEFAULT_GROUP         = "DEFAULT_GROUP"
+	//DefaultPort default http server post
+	DefaultPort = 8080
+	//MaxUint max num of unit type
+	MaxUint = ^uint(0)
+	//PollingIntervalTime seconds
+	PollingIntervalTime = 15
+	//DefaultGroup default group
+	DefaultGroup = "DEFAULT_GROUP"
 )
 
+//NewConfigure filePath need to modified,but not yet
 func NewConfigure() (*Configure, error) {
+	//TODO 确定存储位置
 	filePath := fileutil.GetCurrentDirectory() + "/gdiamond"
 	err := fileutil.CreateDirIfNecessary(filePath)
-	return &Configure{filePath: filePath, domainNameList: dll.New(), localFirst: false, configServerPort: DEFAULT_PORT, port: 1210,
+	return &Configure{filePath: filePath, domainNameList: dll.New(), localFirst: false, configServerPort: DefaultPort, port: 1210,
 		onceTimeout: 2000, receiveWaitTime: 2000 * 5, retrieveDataRetryTimes: int(MaxUint>>1) / 10}, err
 }
 
+//GetFilePath filePath getter,where client store local file
 func (c *Configure) GetFilePath() string {
 	return c.filePath
 }
 
-/**
- * 获取对于一个DiamondServer所对应的查询一个DataID对应的配置信息的Timeout时间<br>
- * 即一次HTTP请求的超时时间<br>
- * 单位：毫秒<br>
- */
+//GetOnceTimeout 获取对于一个DiamondServer所对应的查询一个DataID对应的配置信息的Timeout时间,即一次HTTP请求的超时时间 单位：毫秒
 func (c *Configure) GetOnceTimeout() int {
 	return c.onceTimeout
 }
 
+//GetPort port getter
 func (c *Configure) GetPort() int {
 	return c.port
 }
 
-/**
- * 同步查询一个DataID的最长等待时间<br>
- * 实际最长等待时间小于receiveWaitTime + min(connectionTimeout, onceTimeout)
- *
- * @return
- */
+//GetReceiveWaitTime 同步查询一个DataID的最长等待时间,实际最长等待时间小于receiveWaitTime + min(connectionTimeout, onceTimeout)
 func (c *Configure) GetReceiveWaitTime() int {
 	return c.receiveWaitTime
 }
 
+//GetRetrieveDataRetryTimes 重试次数
 func (c *Configure) GetRetrieveDataRetryTimes() int {
 	return c.retrieveDataRetryTimes
 }
 
-/**
- * 获取轮询的间隔时间。单位：秒<br>
- * 此间隔时间代表轮询查找一次配置信息的间隔时间，对于容灾相关，请设置短一些；<br>
- * 对于其他不可变的配置信息，请设置长一些
- */
+//GetPollingIntervalTime 获取轮询的间隔时间。单位：秒,此间隔时间代表轮询查找一次配置信息的间隔时间，对于容灾相关，请设置短一些；<br>
+//对于其他不可变的配置信息，请设置长一些
 func (c *Configure) GetPollingIntervalTime() int64 {
 	return c.pollingIntervalTime
 }
 
-/**
- * 获取当前支持的所有的DiamondServer域名列表
- */
+//GetDomainNameList 获取当前支持的所有的DiamondServer域名列表
 func (c *Configure) GetDomainNameList() *dll.List {
 	return c.domainNameList
 }
 
-/**
- * 设置当前支持的所有的DiamondServer域名列表，当设置了域名列表后，缺省的域名列表将失效
- */
+//SetDomainNameList 设置当前支持的所有的DiamondServer域名列表，当设置了域名列表后，缺省的域名列表将失效
 func (c *Configure) SetDomainNameList(domainNameList *dll.List) {
 	if nil == domainNameList {
 		return
@@ -89,9 +83,7 @@ func (c *Configure) SetDomainNameList(domainNameList *dll.List) {
 	c.domainNameList = domainNameList
 }
 
-/**
- * 添加一个DiamondServer域名，当设置了域名列表后，缺省的域名列表将失效
- */
+//AddDomainName 添加一个DiamondServer域名，当设置了域名列表后，缺省的域名列表将失效
 func (c *Configure) AddDomainName(domainName string) {
 	if "" == domainName {
 		return
@@ -99,24 +91,25 @@ func (c *Configure) AddDomainName(domainName string) {
 	c.domainNameList.Add(domainName)
 }
 
-/**
- * 设置轮询的间隔时间。单位：秒
- */
+//SetPollingIntervalTime 设置轮询的间隔时间。单位：秒
 func (c *Configure) SetPollingIntervalTime(pollingIntervalTime int64) {
-	if pollingIntervalTime < POLLING_INTERVAL_TIME {
+	if pollingIntervalTime < PollingIntervalTime {
 		return
 	}
 	c.pollingIntervalTime = pollingIntervalTime
 }
 
+//IsLocalFirst localFirst getter,优先使用local file
 func (c *Configure) IsLocalFirst() bool {
 	return c.localFirst
 }
 
+//GetConfigServerAddress configServerAddress getter
 func (c *Configure) GetConfigServerAddress() string {
 	return c.configServerAddress
 }
 
+//GetConfigServerPort configServerPort getter
 func (c *Configure) GetConfigServerPort() int {
 	return c.configServerPort
 }

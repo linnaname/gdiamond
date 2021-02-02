@@ -96,7 +96,7 @@ func (s *Subscriber) Start() {
 
 	s.randomDomainNamePos()
 	s.isRun = true
-	s.diamondConfigure.SetPollingIntervalTime(configinfo.POLLING_INTERVAL_TIME)
+	s.diamondConfigure.SetPollingIntervalTime(configinfo.PollingIntervalTime)
 	s.rotateCheckConfigInfo()
 	s.Unlock()
 }
@@ -133,7 +133,7 @@ func (s *Subscriber) SetSubscriberListener(l listener.SubscriberListener) {
 //AddDataId add dataId to watch
 func (s *Subscriber) AddDataId(dataId, group string) {
 	if group == "" {
-		group = configinfo.DEFAULT_GROUP
+		group = configinfo.DefaultGroup
 	}
 	value, ok := s.cache.Load(dataId)
 	var cacheDatas sync.Map
@@ -164,7 +164,7 @@ func (s *Subscriber) AddDataId(dataId, group string) {
 //RemoveDataId delete dataId to watch
 func (s *Subscriber) RemoveDataId(dataId, group string) {
 	if group == "" {
-		group = configinfo.DEFAULT_GROUP
+		group = configinfo.DefaultGroup
 	}
 	value, ok := s.cache.Load(dataId)
 	if !ok || value == nil {
@@ -193,7 +193,7 @@ func (s *Subscriber) GetDataIds() *hashset.Set {
 //GetConfigureInformation implement method
 func (s *Subscriber) GetConfigureInformation(dataId, group string, timeout int) string {
 	if group == "" {
-		group = configinfo.DEFAULT_GROUP
+		group = configinfo.DefaultGroup
 	}
 	cacheData := s.getCacheData(dataId, group)
 	// 优先使用本地配置
@@ -409,7 +409,7 @@ func (s *Subscriber) getConfigureInfomation(dataId, group string, timeout int, s
 		return "", errors.New("DiamondSubscriber不在运行状态中，无法获取ConfigureInfomation")
 	}
 	if group == "" {
-		group = configinfo.DEFAULT_GROUP
+		group = configinfo.DefaultGroup
 	}
 
 	/**
@@ -657,7 +657,7 @@ func (s *Subscriber) checkLocalConfigInfo() {
  *
  */
 func (s *Subscriber) popConfigInfo(cacheData *configinfo.CacheData, configInfo string) {
-	configureInfomation := configinfo.NewConfigureInfomation()
+	configureInfomation := configinfo.NewConfigureInformation()
 	configureInfomation.DataId = cacheData.DataId()
 	configureInfomation.Group = cacheData.Group()
 	configureInfomation.ConfigureInfo = configInfo
@@ -857,7 +857,7 @@ func (s *Subscriber) checkSnapshot() {
 
 func (s *Subscriber) getSnapshotConfiginfomation(dataId, group string) string {
 	if group == "" {
-		group = configinfo.DEFAULT_GROUP
+		group = configinfo.DefaultGroup
 	}
 	cacheData := s.getCacheData(dataId, group)
 	config, err := s.snapshotConfigInfoProcessor.GetConfigInfomation(dataId, group)

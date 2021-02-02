@@ -7,7 +7,7 @@ import (
 )
 
 func TestString(t *testing.T) {
-	c := &ConfigureInfomation{Group: "DEFAULT_GROUP", DataId: "linname", ConfigureInfo: getConfigInfo("linname", "DEFAULT_GROUP", "I hate linnana too")}
+	c := &ConfigureInformation{Group: "DEFAULT_GROUP", DataId: "linname", ConfigureInfo: getConfigInfo("linname", "DEFAULT_GROUP", "I hate linnana too")}
 	assert.NotNil(t, c)
 	println(c.ConfigureInfo)
 	println(c.String())
