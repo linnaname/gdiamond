@@ -42,9 +42,9 @@ diamond和[disconf](https://github.com/knightliao/disconf)
 
 ## TODO List ##
 * localfile测试和localfile变更监听测试
-* 日志系统完善
 * client 和 server从namesrv获取全量可用server逻辑
 * client user api简化
+* 日志系统完善
 * 管理页面
 * namespace（租户）增加
 * daily/pre/production环境增加
