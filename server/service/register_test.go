@@ -1,6 +1,8 @@
 package service
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestRegister_RegisterServerAll(t *testing.T) {
 

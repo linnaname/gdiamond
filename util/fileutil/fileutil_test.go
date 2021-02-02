@@ -1,6 +1,7 @@
 package fileutil
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -57,4 +58,9 @@ func TestMMapRead(t *testing.T) {
 	buf, err := MMapRead(TestFile)
 	assert.NoError(t, err)
 	assert.NotNil(t, buf)
+}
+
+func TestGetCurrentDirectory(t *testing.T) {
+	assert.NotEmpty(t, GetCurrentDirectory())
+	fmt.Println(GetCurrentDirectory())
 }

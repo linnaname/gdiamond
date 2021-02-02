@@ -120,17 +120,17 @@ func (s *_S) TestRemoveDataId() {
 	assert.Equal(s.T(), maputil.LengthOfSyncMap(s.s.cache), int64(1))
 }
 
-func (s *_S) TestGetConfigureInfomation() {
+func (s *_S) TestGetConfigureInformation() {
 	content := s.s.GetConfigureInformation("linna", "DEFAULT_GROUP", 1000)
 	assert.NotEmpty(s.T(), content)
 }
 
-func (s *_S) TestGetAvailableConfigureInfomation() {
+func (s *_S) TestGetAvailableConfigureInformation() {
 	content := s.s.GetAvailableConfigureInformation("linna", "DEFAULT_GROUP", 1000)
 	assert.NotEmpty(s.T(), content)
 }
 
-func (s *_S) TestGetAvailableConfigureInfomationFromSnapshot() {
+func (s *_S) TestGetAvailableConfigureInformationFromSnapshot() {
 	content := s.s.GetAvailableConfigureInformationFromSnapshot("linna", "DEFAULT_GROUP", 1000)
 	assert.NotEmpty(s.T(), content)
 }

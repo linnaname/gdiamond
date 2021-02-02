@@ -1,6 +1,7 @@
 package service
 
 import (
+	"gdiamond/server/common"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -23,13 +24,21 @@ func notifyConfigInfoChange(dataID, group string) {
 
 func generateNotifyConfigInfoPath(dataID, group, address string) string {
 	urlString := protocol + address + notifyURL
-	urlString += "?method=notifyConfigInfo&dataID=" + dataID + "&group=" + group
+	urlString += "?dataId=" + dataID + "&group=" + group
 	return urlString
 }
 
 func getNodeAddress() []string {
-	//TODO get node address from namesrv
-	return []string{"127.0.0.1:1210"}
+	nameServerAddressList := common.NameServerAddressList
+	if nameServerAddressList == nil || nameServerAddressList.Empty() {
+		return []string{"127.0.0.1:1210"}
+	}
+	nodeAddress := make([]string, nameServerAddressList.Size())
+	for i := range nodeAddress {
+		value, _ := nameServerAddressList.Get(i)
+		nodeAddress[i] = value.(string) + ":1210"
+	}
+	return nodeAddress
 }
 
 func invokeURL(urlString string) (string, error) {

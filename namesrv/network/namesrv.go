@@ -62,7 +62,6 @@ func (ns *NameServer) React(frame []byte, c gnet.Conn) (out []byte, action gnet.
 	if ns.async {
 		_ = ns.workerPool.Submit(func() {
 			response := ns.processRequest(frame, c)
-			//TODO Marshal err?
 			result, _ := json.Marshal(response)
 			c.AsyncWrite(result)
 		})

@@ -1,0 +1,12 @@
+app_name = "gdiamond-server"
+[mysql]
+DBUrl = "root:123456@tcp(127.0.0.1:3306)/diamond?charset=utf8&parseTime=true"
+MaxIdleConns = 20
+MaxOpenConns = 20
+
+[server]
+ServerId = 0
+ServerName = "gdiamond-server"
+ClusterName = "gdiamond-cluster"
+ServerAddr = ""
+HaServerAddr = ""

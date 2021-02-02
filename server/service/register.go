@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"gdiamond/common/namesrv"
+	"gdiamond/server/common"
 	"gdiamond/util/netutil"
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
 	"github.com/smallnest/goframe"
@@ -18,26 +19,18 @@ import (
 type Register struct {
 }
 
-//TODO load from local config file
-func getNameServerAddressList() *singlylinkedlist.List {
-	nameServerAddressList := singlylinkedlist.New()
-	nameServerAddressList.Add("127.0.0.1")
-	return nameServerAddressList
-}
-
 //RegisterServerAll register gdiamond-server to all nameserver
-func (r *Register) RegisterServerAll() {
-	nameServerAddressList := getNameServerAddressList()
+func (r *Register) RegisterServerAll(nameServerAddressList *singlylinkedlist.List) {
 	if nameServerAddressList != nil && !nameServerAddressList.Empty() {
 		request := namesrv.Request{}
 		request.ActionType = namesrv.ActionRegister
-		rreq := namesrv.RegisterRequest{}
-		//TODO load from local server config
-		rreq.ServerId = 0
-		rreq.ServerName = "test"
-		rreq.ServerAddr = netutil.GetLocalIP()
-		rreq.ClusterName = "testCluster"
-		rreq.HaServerAddr = "127.0.0.1"
+		rreq := common.RegisterRequestConfig
+		if rreq.ServerAddr == "" {
+			rreq.ServerAddr = netutil.GetLocalIP()
+		}
+		if rreq.HaServerAddr == "" {
+			rreq.HaServerAddr = netutil.GetLocalIP()
+		}
 		body, _ := json.Marshal(rreq)
 		request.Body = body
 		wg := sync.WaitGroup{}

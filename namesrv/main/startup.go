@@ -49,7 +49,7 @@ func httpServer() {
 	signal.Notify(quit, os.Interrupt)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/url", cluster)
+	mux.HandleFunc("/namesrv/addrs", cluster)
 
 	server := &http.Server{
 		Addr:         ":8080",
@@ -79,7 +79,6 @@ func httpServer() {
 
 func cluster(w http.ResponseWriter, r *http.Request) {
 	cInfo := s.routeInfo.GetAllClusterInfo()
-
 	builder := strings.Builder{}
 	for _, v := range cInfo.ServerAddrTable {
 		serverAddres := v.GetServerAddrs()

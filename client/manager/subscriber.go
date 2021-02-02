@@ -475,7 +475,6 @@ func (s *Subscriber) getConfigureInfomation(dataId, group string, timeout int, s
 		req.Header.Set(AcceptEncoding, "gzip,deflate")
 		resp, err := client.Do(req)
 		if err != nil {
-			//TODO error 和 status异常一致吗？
 			log.Println("未知异常", err)
 			s.rotateToNextDomain()
 			continue

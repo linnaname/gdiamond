@@ -1,6 +1,5 @@
 /**
 TODO http连接复用，参数设置细化
-TODO serveraddres请求namesrv
 */
 package processor
 
@@ -23,9 +22,9 @@ import (
 )
 
 const (
-	defaultDomainName         = "127.0.0.1"
-	dailyDomainName           = "127.0.0.1"
-	configHTTPURIFile         = "url" /** 获取ServerAddress的配置uri */
+	defaultDomainName         = "gdiamond.namesrv.net"
+	dailyDomainName           = "gdiamond.namesrv.net"
+	configHTTPURIFile         = "namesrv/addrs" /** 获取ServerAddress的配置uri */
 	asyncAcquireIntervalInSec = 300
 )
 
@@ -224,8 +223,6 @@ func (p *ServerAddressProcessor) asynAcquireServerAddress() {
 				// 存入本地文件
 				p.storeServerAddressesToLocal()
 			}
-			//FIXME 已经是定时任务了有必要这里多递归吗？
-			//p.asynAcquireServerAddress()
 		}
 	}()
 }

@@ -5,8 +5,8 @@ import (
 	"golang.org/x/exp/mmap"
 	"io/ioutil"
 	"os"
+	"os/user"
 	"path/filepath"
-	"strings"
 )
 
 //CreateDirIfNecessary create directory if not exist,pay attention to fix permission and
@@ -142,6 +142,8 @@ func MMapRead(filePath string) ([]byte, error) {
 
 //GetCurrentDirectory get current programmer execute directory
 func GetCurrentDirectory() string {
-	dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
-	return strings.Replace(dir, "\\", "/", -1)
+	if u, err := user.Current(); err == nil {
+		return u.HomeDir
+	}
+	return ""
 }

@@ -22,13 +22,18 @@ func main() {
 	service.Init()
 
 	register := &service.Register{}
-	register.RegisterServerAll()
+	nameServerAddressList := common.NameServerAddressList
+	if nameServerAddressList == nil || nameServerAddressList.Empty() {
+		log.Println("nameServerAddressList can't be empty!")
+		return
+	}
+	register.RegisterServerAll(nameServerAddressList)
 	ticker := time.NewTicker(time.Second * 30)
 	go func() {
 		defer ticker.Stop()
 		for {
 			<-ticker.C
-			register.RegisterServerAll()
+			register.RegisterServerAll(nameServerAddressList)
 		}
 	}()
 

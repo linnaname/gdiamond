@@ -71,7 +71,6 @@ func (r *RouteInfo) RegisterServer(clusterName, serverAddr, serverName, haServer
 	registerFirst = registerFirst || "" == oldAddr
 
 	prevServerLiveInfo := r.serverLiveTable[serverAddr]
-	//TODO get dataversion?
 	ls := protocol.NewLiveServer(time.Now().Unix(), haServerAddr, nil, conn)
 	r.serverLiveTable[serverAddr] = ls
 	if prevServerLiveInfo == nil {
@@ -148,7 +147,6 @@ func (r *RouteInfo) onChannelDestroy(remoteAddr string, conn gnet.Conn) {
 	if conn != nil {
 		r.RLock()
 		for serverAddr, liveServerInfo := range r.serverLiveTable {
-			//TODO reflect.DeepEqual?
 			if reflect.DeepEqual(liveServerInfo.Conn, conn) {
 				serverAddrFound = serverAddr
 				break

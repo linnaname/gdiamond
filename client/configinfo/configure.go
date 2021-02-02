@@ -32,7 +32,6 @@ const (
 
 //NewConfigure filePath need to modified,but not yet
 func NewConfigure() (*Configure, error) {
-	//TODO 确定存储位置
 	filePath := fileutil.GetCurrentDirectory() + "/gdiamond"
 	err := fileutil.CreateDirIfNecessary(filePath)
 	return &Configure{filePath: filePath, domainNameList: dll.New(), localFirst: false, configServerPort: DefaultPort, port: 1210,
