@@ -1,5 +1,0 @@
-{
-    "dbUrl":"root:123456@tcp(127.0.0.1:3306)/diamond?charset=utf8&parseTime=true",
-    "maxIdleConns": 20,
-    "maxOpenConns": 20
-}

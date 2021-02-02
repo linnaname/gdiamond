@@ -11,6 +11,43 @@ gdiamond可以视为淘宝分布式配置管理diamond的Go实现
 
 ## 快速开始 ##
 
+####下载源码
+git clone https://github.com/linnaname/gdiamond.git
+</br>
+
+####部署NameServer
+1.`cd gdiamond/namesrv/cmd & go build`
+
+2.`./cmd`
+
+看到console有如下输出表示启动成功
+``` 
+2021/02/02 21:04:11 NameServer is listening on :9000 (multi-cores: true, loops: 4)
+2021/02/02 21:04:11 Starting  httpserver
+```
+
+####部署Server
+
+1.启动mysql并创建库名为diamond的库，然后执行server/mysql目录下的init.sql创建config_info
+
+2.数据库配置在server/etc/gdiamond.toml,按照自己的情况进行修改
+
+3.`cd gdiamond/server/cmd & go build`
+
+4.`./cmd -n 127.0.0.1 -c ../etc/` -n后面是namesrv的地址，多个使用分号分割，-c指定配置文件目录目录内必须有gdiamond.toml
+
+控制台看到如下输出代表启动成功
+```2021/02/02 22:00:44 Starting  httpserver```
+
+5.`curl 127.0.0.1:8080:/namesrv/addrs`  查看server是否注册成功， 127.0.0.1是namesrv的ip地址
+
+6.发布配置 `curl -X POST "http://127.0.0.1:1210/diamond-server/publishConfig?dataId=linna&group=DEFAULT_GROUP&content=helloWorld"`
+
+7.获取配置 `curl -X GET "http://127.0.0.1:8848//diamond-server/config?dataId=linna&group=DEFAULT_GROUP"`
+
+####client使用
+
+
 ## 性能测试 ##
 
 
