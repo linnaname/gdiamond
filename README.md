@@ -51,3 +51,4 @@ diamond和[disconf](https://github.com/knightliao/disconf)
 * 集群环境性能测试
 * mysql连接、gnet连接优化
 * namesrv可使用vip + 域名代替？
+* namesrv和server优雅关闭
