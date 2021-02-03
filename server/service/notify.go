@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"gdiamond/server/common"
 	"io/ioutil"
 	"log"
@@ -35,8 +36,11 @@ func getNodeAddress() []string {
 	}
 	nodeAddress := make([]string, nameServerAddressList.Size())
 	for i := range nodeAddress {
-		value, _ := nameServerAddressList.Get(i)
-		nodeAddress[i] = value.(string) + ":1210"
+		value, ok := nameServerAddressList.Get(i)
+		if value != nil && ok {
+			fmt.Println(fmt.Sprintf("vavalue:%v", value))
+			nodeAddress[i] = value.(string) + ":1210"
+		}
 	}
 	return nodeAddress
 }

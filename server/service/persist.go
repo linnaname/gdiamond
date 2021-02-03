@@ -1,6 +1,7 @@
 package service
 
 import (
+	"database/sql"
 	"errors"
 	"gdiamond/server/common"
 	"gdiamond/server/model"
@@ -41,6 +42,9 @@ func findConfigInfo(dataID, group string) (*model.ConfigInfo, error) {
 	configInfo := &model.ConfigInfo{}
 	err = stm.QueryRow(dataID, group).Scan(&configInfo.ID, &configInfo.DataID, &configInfo.Group, &configInfo.Content, &configInfo.MD5, &configInfo.LastModified)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return configInfo, nil

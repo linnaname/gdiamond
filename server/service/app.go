@@ -13,6 +13,17 @@ import (
 var cache sync.Map
 var locker sync.Mutex
 
+func AddOrUpdate(dataID, group, content string) error {
+	cInfo, err := findConfigInfo(dataID, group)
+	if err != nil {
+		return err
+	}
+	if cInfo != nil {
+		return UpdateConfigInfo(dataID, group, content)
+	}
+	return AddConfigInfo(dataID, group, content)
+}
+
 //AddConfigInfo add config to database/save it to disk and notify other gdiamond server nodes
 func AddConfigInfo(dataID, group, content string) error {
 	err := checkParameter(dataID, group, content)

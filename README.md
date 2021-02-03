@@ -28,7 +28,7 @@ git clone https://github.com/linnaname/gdiamond.git
 
 #### 部署Server ####
 
-1.启动mysql并创建库名为diamond的库，然后执行server/mysql目录下的init.sql创建config_info
+1.启动mysql并创建库名为diamond的库，然后执行server/mysql目录下的init.sql创建config_info表
 
 2.数据库配置在server/etc/gdiamond.toml,按照自己的情况进行修改
 
@@ -47,6 +47,38 @@ git clone https://github.com/linnaname/gdiamond.git
 
 #### client使用 ####
 
+1.发布或更新配置
+```golang
+dm := NewManager()
+b := dm.PublishConfig(dataId, group, content)
+```
+通过b的真假值判断是否发布或修改成功
+
+2.读取配置
+```golang
+dm := NewManager()
+content := dm.GetConfig(dataId, group, 1000)
+```
+content就是配置内容
+
+3.读取配置并设置监听器
+
+实现监听器 ManagerListener
+```golang
+type A struct {
+}
+
+func (a A) ReceiveConfigInfo(configInfo string) {
+	println("ReceiveConfigInfo:", configInfo)
+}
+```
+
+读取并监听
+```golang
+dm := NewManager()
+content := dm.GetConfigAndSetListener(dataId, group, 1000, A{})
+```
+content为配置内容，当然需要程序常驻才可以监听
 
 ## 性能测试 ##
 
@@ -62,7 +94,7 @@ diamond在分布式配置管理系统在阿里内部使用非常广泛，而之�
 diamond和[disconf](https://github.com/knightliao/disconf)
 走的是完全不同的两条路，或者业务场景不同，disconf采用推的方式更适用于对配置更新实时感知的场景，而diamond采用的长轮询拉的方式。
 
-从我的使用经历来看大部的配置更改要求实时性要求并没有那么高（大部分场景1s感知和10s感知差别并不大），而diamond在架构上的简单和多层的可用性设计却给高可用和维护带来了很大的便利。
+从我的使用经历来看大部的配置更改要求实时性要求并没有那么高（大部分场景1s感知和30ms感知差别并不大），而diamond在架构上的简单和多层的可用性设计却给高可用和维护带来了很大的便利。
 比如disconf基于zookeeper满足的是实时性要求比较高的场景，但是引入zookeeper确实也给系统带来了更大的复杂度和维护上的困难，而实时性配置推送并没有那么强的需求。
 
 这似乎有点像AP和CP的选择，没有对错好坏之分，diamond在阿里内部的广泛使用从某种程度上也暗示着diamond走的必然是AP的路。
@@ -82,10 +114,12 @@ diamond和[disconf](https://github.com/knightliao/disconf)
 * client 和 server从namesrv获取全量可用server逻辑
 * client user api简化
 * 日志系统完善
-* 管理页面
+* 管理页面（宜搭）
 * namespace（租户）增加
 * daily/pre/production环境增加
 * 集群环境性能测试
 * mysql连接、gnet连接优化
 * namesrv可使用vip + 域名代替？
 * namesrv和server优雅关闭
+* 用户权限
+* 历史记录，回滚

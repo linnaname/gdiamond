@@ -112,7 +112,7 @@ func publishConfig(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte(errorMessage))
 			return
 		}
-		err := service.AddConfigInfo(dataId, group, content)
+		err := service.AddOrUpdate(dataId, group, content)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return

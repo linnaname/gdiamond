@@ -67,7 +67,7 @@ func getNameServerAddressList(nameSrvAdders *string) *singlylinkedlist.List {
 			return nil
 		}
 		nameServerAddressList := singlylinkedlist.New()
-		for nameServerAddress := range nameSrvAdderArr {
+		for _, nameServerAddress := range nameSrvAdderArr {
 			nameServerAddressList.Add(nameServerAddress)
 		}
 		return nameServerAddressList

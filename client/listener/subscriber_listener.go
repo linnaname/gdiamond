@@ -3,6 +3,7 @@ package listener
 import (
 	"errors"
 	"gdiamond/client/configinfo"
+	"gdiamond/util/maputil"
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
 	"log"
 	"sync"
@@ -81,6 +82,10 @@ func (d *DefaultSubscriberListener) RemoveManagerListeners(dataId, group string)
 	}
 	key := makeKey(dataId, group)
 	d.allListeners.Delete(key)
+}
+
+func (d *DefaultSubscriberListener) ClearManagerListeners() {
+	maputil.ClearSyncMap(d.allListeners)
 }
 
 //notify listener async

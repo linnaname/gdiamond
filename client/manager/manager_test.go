@@ -5,6 +5,12 @@ import (
 	"gdiamond/client/listener"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
+)
+
+const (
+	dataId = "linna"
+	group  = "DEFAULT_GROUP"
 )
 
 func TestName(t *testing.T) {
@@ -23,52 +29,38 @@ func (a A) ReceiveConfigInfo(configInfo string) {
 }
 
 func TestNewManager(t *testing.T) {
-	dm := NewManager("linna", "DEFAULT_GROUP", A{})
+	dm := NewManager()
 	assert.NotNil(t, dm)
 }
 
 func TestDefaultManager_GetAndSetManagerListener(t *testing.T) {
-	dm := NewManager("linna", "DEFAULT_GROUP", A{})
-	dm.SetManagerListener(A{})
+	dm := NewManager()
+	dm.SetManagerListener(dataId, group, A{})
 	assert.NotNil(t, dm.GetManagerListeners())
 	assert.Equal(t, dm.GetManagerListeners().Size(), 1)
 }
 
 func TestDefaultManager_Close(t *testing.T) {
-	dm := NewManager("linna", "DEFAULT_GROUP", A{})
+	dm := NewManager()
 	dm.Close()
-	assert.NotNil(t, dm.GetManagerListeners())
-	assert.Equal(t, dm.GetManagerListeners().Size(), 1)
 }
 
-func TestDefaultManager_GetConfigureInfomation(t *testing.T) {
-	dm := NewManager("linna", "DEFAULT_GROUP", A{})
-	content := dm.GetConfigureInformation(1000)
-	assert.NotEmpty(t, content)
-	fmt.Println(content)
-}
-
-func TestDefaultManager_GetAvailableConfigureInfomation(t *testing.T) {
-	dm := NewManager("linna", "DEFAULT_GROUP", A{})
-	content := dm.GetAvailableConfigureInformation(1000)
-	assert.NotEmpty(t, content)
-	fmt.Println(content)
-}
-
-func TestDefaultManager_GetAvailableConfigureInfomationFromSnapshot(t *testing.T) {
-	dm := NewManager("linna", "DEFAULT_GROUP", A{})
-	content := dm.GetAvailableConfigureInformationFromSnapshot(1000)
+func TestDefaultManager_GetConfig(t *testing.T) {
+	dm := NewManager()
+	content := dm.GetConfig(dataId, group, 1000)
 	assert.NotEmpty(t, content)
 	fmt.Println(content)
 }
 
 func TestDefaultManager_PublishConfig(t *testing.T) {
-	dm := NewManager("my.test", "DEFAULT_GROUP", A{})
-	b := dm.PublishConfig("whaterver it's")
+	dm := NewManager()
+	b := dm.PublishConfig("linna3", group, "test listener999")
 	assert.True(t, b)
 }
 
-func TestDefaultManager_ManagerListener(t *testing.T) {
-	NewManager("linna", "DEFAULT_GROUP", A{})
-	select {}
+func TestDefaultManager_GetConfigAndSetListener(t *testing.T) {
+	dm := NewManager()
+	content := dm.GetConfigAndSetListener("linna3", group, 1000, A{})
+	assert.NotEmpty(t, content)
+	time.Sleep(time.Minute * 10)
 }

@@ -86,6 +86,10 @@ func newSubscriber(subscriberListener listener.SubscriberListener) (*Subscriber,
 //random domain name index
 func (s *Subscriber) Start() {
 	s.Lock()
+	defer s.Unlock()
+	if s.isRun {
+		return
+	}
 	s.localConfigInfoProcessor = processor.NewLocalConfigInfoProcessor()
 	s.localConfigInfoProcessor.Start(s.diamondConfigure.GetFilePath() + "/" + DataDir)
 
@@ -98,7 +102,7 @@ func (s *Subscriber) Start() {
 	s.isRun = true
 	s.diamondConfigure.SetPollingIntervalTime(configinfo.PollingIntervalTime)
 	s.rotateCheckConfigInfo()
-	s.Unlock()
+
 }
 
 //Close close subscriber
@@ -151,7 +155,7 @@ func (s *Subscriber) AddDataId(dataId, group string) {
 	}
 	cacheData, ok := cacheDatas.Load(group)
 	if nil == cacheData || !ok {
-		s.Start()
+		//s.Start()
 		c := configinfo.NewCacheData(dataId, group)
 		content := s.loadCacheContentFromDiskLocal(c)
 		md5 := common.GetMd5(content)
@@ -188,6 +192,10 @@ func (s *Subscriber) GetDataIds() *hashset.Set {
 		return true
 	})
 	return keys
+}
+
+func (s *Subscriber) ClearCache() {
+	maputil.ClearSyncMap(s.cache)
 }
 
 //GetConfigureInformation implement method
@@ -312,7 +320,7 @@ func (s *Subscriber) loadCacheContentFromDiskLocal(cacheData *configinfo.CacheDa
  * 循环探测配置信息是否变化，如果变化，则再次向DiamondServer请求获取对应的配置信息
  */
 func (s *Subscriber) rotateCheckConfigInfo() {
-	duration := 60
+	duration := 30
 	if !s.bFirstCheck {
 		duration = int(s.diamondConfigure.GetPollingIntervalTime())
 	}
@@ -325,13 +333,13 @@ func (s *Subscriber) rotateCheckConfigInfo() {
 				log.Println("DiamondSubscriber不在运行状态中，退出查询循环")
 				return
 			}
+			fmt.Println(time.Now())
 			s.checkLocalConfigInfo()
 			err := s.checkDiamondServerConfigInfo()
 			if err != nil {
 				log.Println("循环探测发生异常", err)
 			}
 			s.checkSnapshot()
-			//s.rotateCheckConfigInfo()
 		}
 	}()
 	s.bFirstCheck = false
@@ -354,7 +362,7 @@ func (s *Subscriber) checkDiamondServerConfigInfo() error {
 		if middleIndex == -1 {
 			continue
 		}
-		freshDataId := freshDataIdGroupPairStr[0 : middleIndex-1]
+		freshDataId := freshDataIdGroupPairStr[0:middleIndex]
 		freshGroup := freshDataIdGroupPairStr[middleIndex+1:]
 		value, ok := s.cache.Load(freshDataId)
 		if !ok || value == nil {
@@ -365,8 +373,8 @@ func (s *Subscriber) checkDiamondServerConfigInfo() error {
 		if !ok || val == nil {
 			continue
 		}
-		cacheData, _ := val.(configinfo.CacheData)
-		s.receiveConfigInfo(&cacheData)
+		cacheData, _ := val.(*configinfo.CacheData)
+		s.receiveConfigInfo(cacheData)
 	}
 	return nil
 }
@@ -593,8 +601,8 @@ func (s *Subscriber) getCacheData(dataId, group string) *configinfo.CacheData {
 		cacheDatas, _ := value.(sync.Map)
 		val, ok := cacheDatas.Load(group)
 		if ok && val != nil {
-			cacheData, _ := val.(configinfo.CacheData)
-			return &cacheData
+			cacheData, _ := val.(*configinfo.CacheData)
+			return cacheData
 		}
 	}
 
