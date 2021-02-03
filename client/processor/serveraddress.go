@@ -44,6 +44,7 @@ func NewServerAddressProcessor(diamondConfigure *configinfo.Configure) *ServerAd
 //Start setup processor
 func (p *ServerAddressProcessor) Start() {
 	p.Lock()
+	defer p.Unlock()
 	if p.isRun || p.diamondConfigure == nil {
 		return
 	}
@@ -54,7 +55,7 @@ func (p *ServerAddressProcessor) Start() {
 		p.synAcquireServerAddress()
 		p.asynAcquireServerAddress()
 	}
-	p.Unlock()
+
 }
 
 //Stop stop processor

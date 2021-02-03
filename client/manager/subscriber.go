@@ -333,7 +333,6 @@ func (s *Subscriber) rotateCheckConfigInfo() {
 				log.Println("DiamondSubscriber不在运行状态中，退出查询循环")
 				return
 			}
-			fmt.Println(time.Now())
 			s.checkLocalConfigInfo()
 			err := s.checkDiamondServerConfigInfo()
 			if err != nil {

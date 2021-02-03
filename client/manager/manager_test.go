@@ -62,5 +62,5 @@ func TestDefaultManager_GetConfigAndSetListener(t *testing.T) {
 	dm := NewManager()
 	content := dm.GetConfigAndSetListener("linna3", group, 1000, A{})
 	assert.NotEmpty(t, content)
-	time.Sleep(time.Minute * 10)
+	time.Sleep(time.Minute * 2)
 }

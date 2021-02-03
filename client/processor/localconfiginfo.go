@@ -32,6 +32,7 @@ func NewLocalConfigInfoProcessor() *LocalConfigInfoProcessor {
 //Start setup processor and create local file dir
 func (p *LocalConfigInfoProcessor) Start(rootPath string) {
 	p.Lock()
+	defer p.Unlock()
 	if p.isRun {
 		return
 	}
@@ -40,7 +41,7 @@ func (p *LocalConfigInfoProcessor) Start(rootPath string) {
 
 	initDataDir(p.rootPath)
 	p.startCheckLocalDir(p.rootPath)
-	p.Unlock()
+
 }
 
 //Stop stop processor

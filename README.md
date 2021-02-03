@@ -111,8 +111,8 @@ diamond和[disconf](https://github.com/knightliao/disconf)
 
 ## TODO List ##
 * localfile测试和localfile变更监听测试
-* client 和 server从namesrv获取全量可用server逻辑
-* client user api简化
+* client 和 server从namesrv获取全量可用server逻辑  done
+* client user api简化     done
 * 日志系统完善
 * 管理页面（宜搭）
 * namespace（租户）增加

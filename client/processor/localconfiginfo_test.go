@@ -18,7 +18,7 @@ func (s *_S) SetupSuite() {
 	fmt.Printf("SetupSuite() ...\n")
 	p := NewLocalConfigInfoProcessor()
 	s.p = p
-	p.Start("/Users/goranka/tmp/test")
+	p.Start("/Users/goranka/gdiamond/data")
 }
 
 func (s *_S) TearDownSuite() {
@@ -32,17 +32,17 @@ func (s *_S) TestStart() {
 }
 
 func (s *_S) TestGetLocalConfigureInfomation() {
-	cacheData := configinfo.NewCacheData("linname", "DEFAULT_GROUP")
+	cacheData := configinfo.NewCacheData("linna", "DEFAULT_GROUP")
 	content, err := s.p.GetLocalConfigureInformation(cacheData, false)
 	assert.NoError(s.T(), err)
 	assert.Empty(s.T(), content)
 }
 
 func (s *_S) TestGetLocalConfigureInfomationForce() {
-	cacheData := configinfo.NewCacheData("linname", "DEFAULT_GROUP")
+	cacheData := configinfo.NewCacheData("linna", "DEFAULT_GROUP")
 	content, err := s.p.GetLocalConfigureInformation(cacheData, true)
 	assert.NoError(s.T(), err)
-	assert.Equal(s.T(), content, "I hate linnana too")
+	assert.Equal(s.T(), content, "adafdasfdsa")
 	println(content)
 }
 
