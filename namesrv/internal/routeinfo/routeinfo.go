@@ -3,9 +3,10 @@ package routeinfo
 import (
 	"gdiamond/common/namesrv"
 	"gdiamond/common/protocol"
+	logger "gdiamond/namesrv/internal/log"
 	"github.com/emirpasic/gods/sets/hashset"
 	"github.com/panjf2000/gnet"
-	"log"
+	"github.com/sirupsen/logrus"
 	"reflect"
 	"sync"
 	"time"
@@ -19,8 +20,8 @@ type RouteInfo struct {
 }
 
 const (
-	MASTER_ID                   = 0
-	SERVER_CHANNEL_EXPIRED_TIME = 60
+	MasterId                 = 0
+	ServerChannelExpiredTime = 60
 )
 
 func New() *RouteInfo {
@@ -74,10 +75,14 @@ func (r *RouteInfo) RegisterServer(clusterName, serverAddr, serverName, haServer
 	ls := protocol.NewLiveServer(time.Now().Unix(), haServerAddr, nil, conn)
 	r.serverLiveTable[serverAddr] = ls
 	if prevServerLiveInfo == nil {
-		log.Println("new broker registered,  HAServer: ", serverAddr, haServerAddr)
+		logger.Logger.WithFields(logrus.Fields{
+			"serverLiveTable":  r.serverLiveTable,
+			"serverAddr":       serverAddr,
+			"clusterAddrTable": r.clusterAddrTable,
+		}).Warn("prevServerLiveInfo is nil")
 	}
-	if MASTER_ID != serverId {
-		masterAddr := serverData.GetServerAddrs()[MASTER_ID]
+	if MasterId != serverId {
+		masterAddr := serverData.GetServerAddrs()[MasterId]
 		if masterAddr != "" {
 			serverLiveInfo := r.serverLiveTable[masterAddr]
 			if serverLiveInfo != nil {
@@ -96,7 +101,11 @@ func (r *RouteInfo) UnregisterServer(clusterName, serverAddr, serverName string,
 	defer r.Unlock()
 	serverlive := r.serverLiveTable[serverAddr]
 	delete(r.serverLiveTable, serverAddr)
-	log.Println("unregisterBroker, remove from serverLiveTable", serverlive, serverName)
+
+	logger.Logger.WithFields(logrus.Fields{
+		"serverlive": serverlive,
+		"serverName": serverName,
+	}).Info("unregisterBroker, remove from serverLiveTable")
 
 	removeServerName := false
 	server := r.serverAddrTable[serverName]
@@ -104,11 +113,17 @@ func (r *RouteInfo) UnregisterServer(clusterName, serverAddr, serverName string,
 		serverAddress := server.GetServerAddrs()
 		addr := serverAddress[serverId]
 		delete(serverAddress, serverId)
-		log.Println("unregisterServer, remove addr from serverAddrTable:", addr)
+
+		logger.Logger.WithFields(logrus.Fields{
+			"addr": addr,
+		}).Info("unregisterServer, remove addr from serverAddrTable")
 
 		if len(serverAddress) == 0 {
 			delete(r.serverAddrTable, serverName)
-			log.Println("unregisterServer, remove name from serverAddrTable:", serverName)
+			logger.Logger.WithFields(logrus.Fields{
+				"serverName": serverName,
+			}).Info("unregisterServer, remove name from serverAddrTable")
+
 			removeServerName = true
 		}
 	}
@@ -116,10 +131,15 @@ func (r *RouteInfo) UnregisterServer(clusterName, serverAddr, serverName string,
 		nameSet := r.clusterAddrTable[clusterName]
 		if nameSet != nil {
 			nameSet.Remove(serverName)
-			log.Println("unregisterServer, remove name from clusterAddrTable:", serverName)
+			logger.Logger.WithFields(logrus.Fields{
+				"serverName": serverName,
+			}).Info("unregisterServer, remove name from clusterAddrTable")
+
 			if nameSet.Size() == 0 {
 				delete(r.clusterAddrTable, clusterName)
-				log.Println("unregisterServer, remove cluster from clusterAddrTable:", clusterName)
+				logger.Logger.WithFields(logrus.Fields{
+					"clusterName": clusterName,
+				}).Info("unregisterServer, remove name from clusterAddrTable")
 			}
 		}
 	}
@@ -129,13 +149,20 @@ func (r *RouteInfo) UnregisterServer(clusterName, serverAddr, serverName string,
 func (r *RouteInfo) ScanNotActiveServer() {
 	for k, v := range r.serverLiveTable {
 		last := v.LastUpdateTimestamp
-		if last+SERVER_CHANNEL_EXPIRED_TIME < time.Now().Unix() {
+		if last+ServerChannelExpiredTime < time.Now().Unix() {
 			if v.Conn != nil {
 				err := v.Conn.Close()
-				log.Printf("close the connection to remote address:%s,err:%v,", k, err)
+				logger.Logger.WithFields(logrus.Fields{
+					"address": k,
+					"err":     err,
+				}).Info("close the connection to remote address")
 			}
 			delete(r.serverLiveTable, k)
-			log.Println("The server channel expired,", k, SERVER_CHANNEL_EXPIRED_TIME)
+			logger.Logger.WithFields(logrus.Fields{
+				"address":                  k,
+				"ServerChannelExpiredTime": ServerChannelExpiredTime,
+			}).Info("The server channel expired")
+
 			r.onChannelDestroy(k, v.Conn)
 		}
 	}
@@ -158,7 +185,9 @@ func (r *RouteInfo) onChannelDestroy(remoteAddr string, conn gnet.Conn) {
 	if serverAddrFound == "" {
 		serverAddrFound = remoteAddr
 	} else {
-		log.Println("the broker's channel destroyed, {}, clean it's data structure at once", serverAddrFound)
+		logger.Logger.WithFields(logrus.Fields{
+			"serverAddrFound": serverAddrFound,
+		}).Info("the broker's channel destroyed, clean it's data structure at once")
 	}
 	if serverAddrFound != "" {
 		r.Lock()
@@ -176,7 +205,10 @@ func (r *RouteInfo) onChannelDestroy(remoteAddr string, conn gnet.Conn) {
 				if serverAddr == serverAddrFound {
 					serverNameFound = server.ServerName
 					delete(serverAddrs, serverId)
-					log.Println("remove serverAddr[{}, {}] from serverAddrTable, because channel destroyed", serverId, serverAddr)
+					logger.Logger.WithFields(logrus.Fields{
+						"serverId":   serverId,
+						"serverAddr": serverAddr,
+					}).Info("remove serverAddr from serverAddrTable, because channel destroyed")
 					break
 				}
 			}
@@ -184,16 +216,24 @@ func (r *RouteInfo) onChannelDestroy(remoteAddr string, conn gnet.Conn) {
 			if len(server.GetServerAddrs()) == 0 {
 				removeServerName = true
 				delete(r.serverAddrTable, serverName)
-				log.Println("remove serverName  from serverAddrTable, because channel destroyed", server.ServerName)
+				logger.Logger.WithFields(logrus.Fields{
+					"ServerName": server.ServerName,
+				}).Info("remove serverAddr from serverAddrTable, because channel destroyed")
 			}
 		}
 
 		if serverNameFound != "" && removeServerName {
 			for clusterName, serverNames := range r.clusterAddrTable {
 				serverNames.Remove(serverNameFound)
-				log.Println("remove serverName, clusterName  from clusterAddrTable, because channel destroyed", serverNameFound, clusterName)
+				logger.Logger.WithFields(logrus.Fields{
+					"serverNameFound": serverNameFound,
+					"clusterName":     clusterName,
+				}).Info("remove serverAddr,clusterName from serverAddrTable, because channel destroyed")
+
 				if serverNames.Empty() {
-					log.Println("remove the clusterName[{}] from clusterAddrTable, because channel destroyed and no broker in this cluster", clusterName)
+					logger.Logger.WithFields(logrus.Fields{
+						"clusterName": clusterName,
+					}).Info("remove the clusterName[{}] from clusterAddrTable, because channel destroyed and no broker in this cluster")
 					delete(r.clusterAddrTable, clusterName)
 				}
 				break

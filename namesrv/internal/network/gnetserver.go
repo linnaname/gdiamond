@@ -3,16 +3,15 @@ package network
 import (
 	"encoding/binary"
 	"encoding/json"
-	"fmt"
 	"gdiamond/common/namesrv"
-	"gdiamond/namesrv/routeinfo"
+	logger "gdiamond/namesrv/internal/log"
+	"gdiamond/namesrv/internal/routeinfo"
 	"github.com/panjf2000/gnet"
 	"github.com/panjf2000/gnet/pool/goroutine"
-	"log"
 )
 
-//NameServer name server
-type NameServer struct {
+//GnetServer name server
+type GnetServer struct {
 	*gnet.EventServer
 	async      bool
 	workerPool *goroutine.Pool
@@ -23,41 +22,41 @@ type NameServer struct {
 //New setup name server
 func New(addr string, routeInfo *routeinfo.RouteInfo) error {
 	codec := getCodec()
-	ns := &NameServer{addr: addr, async: true, workerPool: goroutine.Default(), routeInfo: routeInfo}
+	ns := &GnetServer{addr: addr, async: true, workerPool: goroutine.Default(), routeInfo: routeInfo}
 	err := gnet.Serve(ns, addr, gnet.WithMulticore(true),
 		/*gnet.WithTCPKeepAlive(time.Second*20)*/ gnet.WithCodec(codec), gnet.WithReusePort(true))
 	return err
 }
 
 //OnInitComplete implement gnet method
-func (ns *NameServer) OnInitComplete(srv gnet.Server) (action gnet.Action) {
-	log.Printf("NameServer is listening on %s (multi-cores: %t, loops: %d)\n",
+func (ns *GnetServer) OnInitComplete(srv gnet.Server) (action gnet.Action) {
+	logger.Logger.Debug("GnetServer is listening on %s (multi-cores: %t, loops: %d)\n",
 		srv.Addr.String(), srv.Multicore, srv.NumEventLoop)
 	return
 }
 
 //OnShutdown implement gnet method
-func (ns *NameServer) OnShutdown(srv gnet.Server) {
-	log.Printf("NameServer OnShutdown on %s (multi-cores: %t, loops: %d)\n",
+func (ns *GnetServer) OnShutdown(srv gnet.Server) {
+	logger.Logger.Debug("GnetServer OnShutdown on %s (multi-cores: %t, loops: %d)\n",
 		srv.Addr.String(), srv.Multicore, srv.NumEventLoop)
 	return
 }
 
 //OnOpened implement gnet method
-func (ns *NameServer) OnOpened(c gnet.Conn) (out []byte, action gnet.Action) {
-	log.Printf("NameServer OnOpened")
+func (ns *GnetServer) OnOpened(c gnet.Conn) (out []byte, action gnet.Action) {
+	logger.Logger.Debug("GnetServer OnOpened")
 	return
 }
 
 //OnClosed implement gnet method
-func (ns *NameServer) OnClosed(c gnet.Conn, err error) (action gnet.Action) {
-	log.Printf("NameServer OnClosed")
+func (ns *GnetServer) OnClosed(c gnet.Conn, err error) (action gnet.Action) {
+	logger.Logger.Debug("GnetServer OnClosed")
 	return
 }
 
 //React  implement gnet method, handle logic
-func (ns *NameServer) React(frame []byte, c gnet.Conn) (out []byte, action gnet.Action) {
-	fmt.Println("React frame:", string(frame))
+func (ns *GnetServer) React(frame []byte, c gnet.Conn) (out []byte, action gnet.Action) {
+	logger.Logger.Debug("React frame:", string(frame))
 
 	if ns.async {
 		_ = ns.workerPool.Submit(func() {
@@ -71,7 +70,7 @@ func (ns *NameServer) React(frame []byte, c gnet.Conn) (out []byte, action gnet.
 	return
 }
 
-func (ns *NameServer) processRequest(data []byte, c gnet.Conn) namesrv.Response {
+func (ns *GnetServer) processRequest(data []byte, c gnet.Conn) namesrv.Response {
 	response := namesrv.Response{}
 	response.Code = namesrv.NotSupported
 
