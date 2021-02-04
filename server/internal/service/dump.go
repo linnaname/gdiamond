@@ -1,7 +1,7 @@
 package service
 
 import (
-	"gdiamond/server/model"
+	"gdiamond/server/internal/model"
 	"log"
 	"time"
 )
@@ -10,7 +10,11 @@ import (
 const PageSize = 1000
 
 //Init schedule dump disk task
-func Init() {
+func SetupDumpTask() error {
+	err := DumpAll2Disk()
+	if err != nil {
+		return err
+	}
 	ticker := time.NewTicker(time.Minute * 2)
 	go func() {
 		defer ticker.Stop()
@@ -22,6 +26,7 @@ func Init() {
 			}
 		}
 	}()
+	return nil
 }
 
 //DumpAll2Disk  dump all config info from database to disk

@@ -2,7 +2,7 @@ package service
 
 import (
 	"fmt"
-	"gdiamond/server/model"
+	"gdiamond/server/internal/model"
 	"gdiamond/util/fileutil"
 	"io"
 	"io/ioutil"

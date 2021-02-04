@@ -3,9 +3,10 @@ package service
 import (
 	"encoding/binary"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"gdiamond/common/namesrv"
-	"gdiamond/server/common"
+	"gdiamond/server/internal/common"
 	"gdiamond/util/netutil"
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
 	"github.com/smallnest/goframe"
@@ -17,6 +18,28 @@ import (
 
 //Register  register gdiamond-server to nameserver
 type Register struct {
+}
+
+//SetupRegisterTask setup task register to name server
+func SetupRegisterTask() error {
+	register := &Register{}
+	nameServerAddressList := common.NameServerAddressList
+	if nameServerAddressList == nil || nameServerAddressList.Empty() {
+		log.Println("nameServerAddressList can't be empty!")
+		return errors.New("nameServerAddressList can't be empty")
+	}
+
+	//register first
+	register.RegisterServerAll(nameServerAddressList)
+	ticker := time.NewTicker(time.Second * 30)
+	go func() {
+		defer ticker.Stop()
+		for {
+			<-ticker.C
+			register.RegisterServerAll(nameServerAddressList)
+		}
+	}()
+	return nil
 }
 
 //RegisterServerAll register gdiamond-server to all nameserver

@@ -6,7 +6,7 @@ import (
 )
 
 func TestInitConfig(t *testing.T) {
-	err := InitConfig()
+	err := ParseCmdAndInitConfig()
 	assert.NoError(t, err)
 	assert.NotNil(t, GMySQLConfig)
 	assert.NotEmpty(t, GMySQLConfig.DBUrl)

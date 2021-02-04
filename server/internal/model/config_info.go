@@ -1,7 +1,7 @@
 package model
 
 import (
-	"gdiamond/server/common"
+	"gdiamond/util/stringutil"
 	"time"
 )
 
@@ -20,7 +20,7 @@ type ConfigInfo struct {
 func NewConfigInfo(dataID, group, content string, lastModified time.Time) *ConfigInfo {
 	configInfo := &ConfigInfo{Group: group, DataID: dataID, Content: content, LastModified: lastModified}
 	if content != "" {
-		configInfo.MD5 = common.GetMd5(content)
+		configInfo.MD5 = stringutil.GetMd5(content)
 	}
 	return configInfo
 }

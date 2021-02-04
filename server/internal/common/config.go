@@ -1,6 +1,7 @@
 package common
 
 import (
+	"errors"
 	"flag"
 	"gdiamond/common/namesrv"
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
@@ -24,10 +25,11 @@ type MySQLConfig struct {
 	MaxOpenConns int
 }
 
-//InitConfig read mysql connect config from local file
-func InitConfig() error {
+//ParseCmdAndInitConfig read config file path from cmd
+//and read config from file
+func ParseCmdAndInitConfig() error {
 	nameSrvAdders := flag.String("n", "", "name server address,spe with ; when more than one")
-	c := flag.String("c", "", "config/etc")
+	c := flag.String("c", "", "need a config file dir where contain a config file name gdiamond.toml")
 	if !flag.Parsed() {
 		flag.Parse()
 	}
@@ -40,24 +42,45 @@ func InitConfig() error {
 	if err != nil {
 		return err
 	}
-	mysqlViper := v.Sub("mysql")
-	GMySQLConfig = &MySQLConfig{}
-	err = mysqlViper.Unmarshal(GMySQLConfig)
+	err = setupGMySQLConfig(v)
 	if err != nil {
 		return err
 	}
+	err = setupRegisterRequestConfig(v)
+	if err != nil {
+		return err
+	}
+	//parse name server list from cmd
+	return setupNameServerAddressList(nameSrvAdders)
+}
+
+func setupGMySQLConfig(v *viper.Viper) error {
+	mysqlViper := v.Sub("mysql")
+	if mysqlViper == nil {
+		return errors.New("can't find mysql config")
+	}
+	GMySQLConfig = &MySQLConfig{}
+	err := mysqlViper.Unmarshal(GMySQLConfig)
+	return err
+}
+
+func setupRegisterRequestConfig(v *viper.Viper) error {
 	serverViper := v.Sub("server")
 	RegisterRequestConfig = &namesrv.RegisterRequest{}
-	err = serverViper.Unmarshal(RegisterRequestConfig)
-	if err != nil {
-		return err
+	err := serverViper.Unmarshal(RegisterRequestConfig)
+	return err
+}
+
+func setupNameServerAddressList(nameSrvAdders *string) error {
+	NameServerAddressList = getNameServerAddressListFromCmd(nameSrvAdders)
+	if NameServerAddressList == nil || NameServerAddressList.Size() == 0 {
+		return errors.New("can't get name server address from cmd")
 	}
-	NameServerAddressList = getNameServerAddressList(nameSrvAdders)
 	return nil
 }
 
 //getNameServerAddressList get name server address from flag
-func getNameServerAddressList(nameSrvAdders *string) *singlylinkedlist.List {
+func getNameServerAddressListFromCmd(nameSrvAdders *string) *singlylinkedlist.List {
 	if nameSrvAdders != nil {
 		if *nameSrvAdders == "" {
 			return nil

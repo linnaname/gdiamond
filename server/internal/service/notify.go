@@ -2,7 +2,7 @@ package service
 
 import (
 	"fmt"
-	"gdiamond/server/common"
+	"gdiamond/server/internal/common"
 	"io/ioutil"
 	"log"
 	"net/http"

@@ -2,8 +2,8 @@ package service
 
 import (
 	"errors"
-	"gdiamond/server/common"
-	"gdiamond/server/model"
+	"gdiamond/server/internal/model"
+	"gdiamond/util/stringutil"
 	"strings"
 	"sync"
 	"time"
@@ -162,7 +162,7 @@ func UpdateMD5Cache(configInfo *model.ConfigInfo) {
 	locker.Lock()
 	defer locker.Unlock()
 	key := generateMD5CacheKey(configInfo.DataID, configInfo.Group)
-	md5 := common.GetMd5(configInfo.Content)
+	md5 := stringutil.GetMd5(configInfo.Content)
 	configInfo.MD5 = md5
 	cache.Store(key, configInfo)
 }

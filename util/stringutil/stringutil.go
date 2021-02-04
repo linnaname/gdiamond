@@ -1,6 +1,10 @@
 package stringutil
 
-import "strings"
+import (
+	"crypto/md5"
+	"fmt"
+	"strings"
+)
 
 const invalidChar = ";&%#$@,*^~()/|\\+"
 
@@ -10,4 +14,12 @@ func HasInvalidChar(str string) bool {
 		return true
 	}
 	return strings.ContainsAny(str, invalidChar)
+}
+
+//GetMd5 get md5 from string
+func GetMd5(content string) string {
+	if content == "" {
+		return ""
+	}
+	return fmt.Sprintf("%x", md5.Sum([]byte(content)))
 }

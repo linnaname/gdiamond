@@ -6,7 +6,7 @@ import (
 )
 
 func TestInitDBConn(t *testing.T) {
-	InitConfig()
+	ParseCmdAndInitConfig()
 	err := InitDBConn()
 	assert.NoError(t, err)
 	assert.NotNil(t, GDBConn)

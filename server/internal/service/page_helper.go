@@ -3,8 +3,8 @@ package service
 import (
 	"errors"
 	"fmt"
-	"gdiamond/server/common"
-	"gdiamond/server/model"
+	"gdiamond/server/internal/common"
+	"gdiamond/server/internal/model"
 )
 
 //FetchPage util for fetch data by page

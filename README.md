@@ -34,7 +34,7 @@ git clone https://github.com/linnaname/gdiamond.git
 
 3.`cd gdiamond/server/cmd & go build`
 
-4.`./cmd -n 127.0.0.1 -c ../etc/` -n后面是namesrv的地址，多个使用分号分割，-c指定配置文件目录目录内必须有gdiamond.toml
+4.`./cmd -n 127.0.0.1 -c ../configs/` -n后面是namesrv的地址，多个使用分号分割，-c指定配置文件目录目录内必须有gdiamond.toml
 
 控制台看到如下输出代表启动成功
 ```2021/02/02 22:00:44 Starting  httpserver```
@@ -110,7 +110,7 @@ diamond和[disconf](https://github.com/knightliao/disconf)
 虽然这是我自己为了把Golang重新捡起来写的一个轮子，但是还是欢迎感兴趣的小伙参与项目贡献！但Golang的生态确实还不太完善，如果您感兴趣欢迎联系我，也可以额提交PR修复一个bug，或者新建 Issue 讨论新特性或者变更。
 
 ## TODO List ##
-* localfile测试和localfile变更监听测试
+* localfile测试和localfile变更监听测试  done
 * client 和 server从namesrv获取全量可用server逻辑  done
 * client user api简化     done
 * 日志系统完善

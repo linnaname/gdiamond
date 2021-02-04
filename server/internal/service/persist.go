@@ -3,8 +3,8 @@ package service
 import (
 	"database/sql"
 	"errors"
-	"gdiamond/server/common"
-	"gdiamond/server/model"
+	"gdiamond/server/internal/common"
+	"gdiamond/server/internal/model"
 	"strings"
 	"time"
 )

@@ -2,7 +2,7 @@ package service
 
 import (
 	"fmt"
-	"gdiamond/server/common"
+	"gdiamond/server/internal/common"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -14,7 +14,7 @@ type _S struct {
 
 func (s *_S) SetupSuite() {
 	fmt.Printf("SetupSuite() ...\n")
-	common.InitConfig()
+	common.ParseCmdAndInitConfig()
 	common.InitDBConn()
 }
 
@@ -23,7 +23,7 @@ func (s *_S) TearDownSuite() {
 }
 
 func (s *_S) TestInit() {
-	Init()
+	SetupDumpTask()
 	for {
 
 	}
