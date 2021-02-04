@@ -4,6 +4,7 @@ import (
 	"gdiamond/server/internal/service"
 	"gdiamond/util/fileutil"
 	"gdiamond/util/stringutil"
+	"github.com/sirupsen/logrus"
 	"log"
 	"net/http"
 	"net/url"
@@ -49,13 +50,19 @@ func SetupHttpServer() {
 	}()
 
 	log.Println("Starting  httpserver")
+	service.Logger.WithFields(logrus.Fields{}).Info("Starting  httpserver")
+
 	err := server.ListenAndServe()
 	if err != nil {
 		// 正常退出
 		if err == http.ErrServerClosed {
-			log.Fatal("Server closed under request")
+			service.Logger.WithFields(logrus.Fields{
+				"err": err.Error(),
+			}).Fatal("Server closed under request")
 		} else {
-			log.Fatal("Server closed unexpected", err)
+			service.Logger.WithFields(logrus.Fields{
+				"err": err.Error(),
+			}).Fatal("Server closed unexpected")
 		}
 	}
 }

@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"gdiamond/common/namesrv"
 	"gdiamond/server/internal/common"
-	"gdiamond/server/internal/server"
 	"gdiamond/util/netutil"
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
 	"github.com/sirupsen/logrus"
@@ -33,7 +32,7 @@ func SetupRegisterTask() error {
 	//register first
 	register.RegisterServerAll(nameServerAddressList)
 	log.Println("Finished first RegisterServerAll")
-	server.Logger.WithFields(logrus.Fields{}).Info("Finished first RegisterServerAll")
+	Logger.WithFields(logrus.Fields{}).Info("Finished first RegisterServerAll")
 
 	ticker := time.NewTicker(time.Second * 30)
 	go func() {
@@ -78,7 +77,7 @@ func registerServer(namesrvAddr string, timeoutMills int, request namesrv.Reques
 	//conn.(*net.TCPConn).SetKeepAlive(true)
 	//conn.(*net.TCPConn).SetKeepAlivePeriod(time.Second * 10)
 	if err != nil {
-		server.Logger.WithFields(logrus.Fields{
+		Logger.WithFields(logrus.Fields{
 			"err":          err.Error(),
 			"address":      address,
 			"timeoutMills": timeoutMills,

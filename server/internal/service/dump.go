@@ -2,7 +2,6 @@ package service
 
 import (
 	"gdiamond/server/internal/model"
-	"gdiamond/server/internal/server"
 	"github.com/sirupsen/logrus"
 	"log"
 	"time"
@@ -19,7 +18,7 @@ func SetupDumpTask() error {
 	}
 
 	log.Println("Finished first dump config from database to disk")
-	server.Logger.WithFields(logrus.Fields{}).Info("Finished first dump config from database to disk")
+	Logger.WithFields(logrus.Fields{}).Info("Finished first dump config from database to disk")
 
 	ticker := time.NewTicker(time.Minute * 2)
 	go func() {
@@ -49,7 +48,7 @@ func DumpAll2Disk() error {
 			for pageNo := 2; pageNo <= totalPages; pageNo++ {
 				page, err := findAllConfigInfo(pageNo, PageSize)
 				if err != nil {
-					server.Logger.WithFields(logrus.Fields{
+					Logger.WithFields(logrus.Fields{
 						"err":    err.Error(),
 						"pageNo": pageNo,
 					}).Warn("findAllConfigInfo failed")

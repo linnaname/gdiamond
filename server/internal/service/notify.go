@@ -2,7 +2,6 @@ package service
 
 import (
 	"gdiamond/server/internal/common"
-	"gdiamond/server/internal/server"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
@@ -19,7 +18,7 @@ func notifyConfigInfoChange(dataID, group string) {
 	for _, addr := range nodes {
 		urlString := generateNotifyConfigInfoPath(dataID, group, addr)
 		result, err := invokeURL(urlString)
-		server.Logger.WithFields(logrus.Fields{
+		Logger.WithFields(logrus.Fields{
 			"err":    err.Error(),
 			"result": result,
 			"addr":   addr,
