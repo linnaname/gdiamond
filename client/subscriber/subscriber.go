@@ -3,16 +3,16 @@ TODO http连接复用，精细参数设置
 TODO 优雅关闭procc等
 */
 
-package manager
+package subscriber
 
 import (
 	"compress/gzip"
 	"errors"
 	"fmt"
-	"gdiamond/client/configinfo"
+	"gdiamond/client/internal/configinfo"
+	"gdiamond/client/internal/processor"
+	"gdiamond/client/internal/simplecache"
 	"gdiamond/client/listener"
-	"gdiamond/client/processor"
-	"gdiamond/client/simplecache"
 	"gdiamond/util/maputil"
 	"gdiamond/util/stringutil"
 	"gdiamond/util/urlutil"

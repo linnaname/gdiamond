@@ -1,7 +1,7 @@
 package processor
 
 import (
-	"gdiamond/client/configinfo"
+	"gdiamond/client/internal/configinfo"
 	"gdiamond/util/fileutil"
 	"gdiamond/util/filewatcher"
 	"github.com/fsnotify/fsnotify"

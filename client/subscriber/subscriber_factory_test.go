@@ -1,4 +1,4 @@
-package manager
+package subscriber
 
 import (
 	"github.com/stretchr/testify/assert"

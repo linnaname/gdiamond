@@ -1,8 +1,9 @@
-package manager
+package client
 
 import (
 	"fmt"
 	"gdiamond/client/listener"
+	"gdiamond/client/subscriber"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -14,7 +15,7 @@ const (
 )
 
 func TestName(t *testing.T) {
-	ins := GetSubscriberInstance()
+	ins := subscriber.GetSubscriberInstance()
 	sl := ins.GetSubscriberListener()
 	dl, ok := sl.(listener.DefaultSubscriberListener)
 	assert.True(t, ok)
@@ -28,38 +29,38 @@ func (a A) ReceiveConfigInfo(configInfo string) {
 	println("ReceiveConfigInfo:", configInfo)
 }
 
-func TestNewManager(t *testing.T) {
-	dm := NewManager()
+func TestNewClient(t *testing.T) {
+	dm := NewClient()
 	assert.NotNil(t, dm)
 }
 
-func TestDefaultManager_GetAndSetManagerListener(t *testing.T) {
-	dm := NewManager()
+func TestDefaultClient_GetAndSetManagerListener(t *testing.T) {
+	dm := NewClient()
 	dm.SetManagerListener(dataId, group, A{})
 	assert.NotNil(t, dm.GetManagerListeners())
 	assert.Equal(t, dm.GetManagerListeners().Size(), 1)
 }
 
-func TestDefaultManager_Close(t *testing.T) {
-	dm := NewManager()
+func TestDefaultClient_Close(t *testing.T) {
+	dm := NewClient()
 	dm.Close()
 }
 
-func TestDefaultManager_GetConfig(t *testing.T) {
-	dm := NewManager()
+func TestDefaultClient_GetConfig(t *testing.T) {
+	dm := NewClient()
 	content := dm.GetConfig(dataId, group, 1000)
 	assert.NotEmpty(t, content)
 	fmt.Println(content)
 }
 
-func TestDefaultManager_PublishConfig(t *testing.T) {
-	dm := NewManager()
+func TestDefaultClient_PublishConfig(t *testing.T) {
+	dm := NewClient()
 	b := dm.PublishConfig("linna3", group, "test listener999")
 	assert.True(t, b)
 }
 
-func TestDefaultManager_GetConfigAndSetListener(t *testing.T) {
-	dm := NewManager()
+func TestDefaultClient_GetConfigAndSetListener(t *testing.T) {
+	dm := NewClient()
 	content := dm.GetConfigAndSetListener("linna3", group, 1000, A{})
 	assert.NotEmpty(t, content)
 	time.Sleep(time.Minute * 2)

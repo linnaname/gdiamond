@@ -2,7 +2,7 @@ package processor
 
 import (
 	"fmt"
-	"gdiamond/client/configinfo"
+	"gdiamond/client/internal/configinfo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"os"

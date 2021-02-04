@@ -1,4 +1,4 @@
-package manager
+package subscriber
 
 import (
 	"bytes"

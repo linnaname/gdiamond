@@ -7,7 +7,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"gdiamond/client/configinfo"
+	"gdiamond/client/internal/configinfo"
 	"gdiamond/util/fileutil"
 	"gdiamond/util/urlutil"
 	dll "github.com/emirpasic/gods/lists/doublylinkedlist"

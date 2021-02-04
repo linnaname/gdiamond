@@ -2,7 +2,7 @@ package listener
 
 import (
 	"errors"
-	"gdiamond/client/configinfo"
+	"gdiamond/client/internal/configinfo"
 	"gdiamond/util/maputil"
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
 	"log"

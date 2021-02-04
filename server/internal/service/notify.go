@@ -19,7 +19,7 @@ func notifyConfigInfoChange(dataID, group string) {
 		urlString := generateNotifyConfigInfoPath(dataID, group, addr)
 		result, err := invokeURL(urlString)
 		Logger.WithFields(logrus.Fields{
-			"err":    err.Error(),
+			"err":    err,
 			"result": result,
 			"addr":   addr,
 		}).Info("notify node and result")
