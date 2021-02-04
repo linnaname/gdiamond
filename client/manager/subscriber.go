@@ -13,8 +13,8 @@ import (
 	"gdiamond/client/listener"
 	"gdiamond/client/processor"
 	"gdiamond/client/simplecache"
-	"gdiamond/server/common"
 	"gdiamond/util/maputil"
+	"gdiamond/util/stringutil"
 	"gdiamond/util/urlutil"
 	"github.com/emirpasic/gods/sets/hashset"
 	"io/ioutil"
@@ -158,7 +158,7 @@ func (s *Subscriber) AddDataId(dataId, group string) {
 		//s.Start()
 		c := configinfo.NewCacheData(dataId, group)
 		content := s.loadCacheContentFromDiskLocal(c)
-		md5 := common.GetMd5(content)
+		md5 := stringutil.GetMd5(content)
 		c.SetMD5(md5)
 		cacheDatas.LoadOrStore(group, c)
 		s.cache.Store(dataId, cacheDatas)
@@ -913,7 +913,7 @@ func convertStringToSet(modifiedDataIdsString string) *hashset.Set {
 }
 
 func checkContent(configInfo, md5 string) bool {
-	realMd5 := common.GetMd5(configInfo)
+	realMd5 := stringutil.GetMd5(configInfo)
 	if realMd5 == "" {
 		return md5 == ""
 	}

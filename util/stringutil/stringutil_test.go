@@ -10,3 +10,8 @@ func TestHasInvalidChar(t *testing.T) {
 	assert.True(t, HasInvalidChar("@dajkdjakdjka"))
 	assert.True(t, HasInvalidChar("dafdsad\\jdajkldjak"))
 }
+
+func TestGetMd5(t *testing.T) {
+	assert.Empty(t, GetMd5(""))
+	assert.NotEmpty(t, GetMd5("abac"))
+}

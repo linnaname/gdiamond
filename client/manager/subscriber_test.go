@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"compress/gzip"
 	"fmt"
-	"gdiamond/server/common"
 	"gdiamond/util/maputil"
+	"gdiamond/util/stringutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"io/ioutil"
@@ -16,9 +16,9 @@ import (
 )
 
 func TestCheckContent(t *testing.T) {
-	assert.True(t, checkContent("test", common.GetMd5("test")))
-	assert.True(t, checkContent("", common.GetMd5("")))
-	assert.False(t, checkContent("A", common.GetMd5("B")))
+	assert.True(t, checkContent("test", stringutil.GetMd5("test")))
+	assert.True(t, checkContent("", stringutil.GetMd5("")))
+	assert.False(t, checkContent("A", stringutil.GetMd5("B")))
 }
 
 func TestGetContent(t *testing.T) {
