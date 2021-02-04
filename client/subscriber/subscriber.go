@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"gdiamond/client/internal/configinfo"
+	"gdiamond/client/internal/logger"
 	"gdiamond/client/internal/processor"
 	"gdiamond/client/internal/simplecache"
 	"gdiamond/client/listener"
@@ -17,8 +18,8 @@ import (
 	"gdiamond/util/stringutil"
 	"gdiamond/util/urlutil"
 	"github.com/emirpasic/gods/sets/hashset"
+	"github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -90,6 +91,7 @@ func (s *Subscriber) Start() {
 	if s.isRun {
 		return
 	}
+	logger.SetupLogger(s.diamondConfigure.GetFilePath())
 	s.localConfigInfoProcessor = processor.NewLocalConfigInfoProcessor()
 	s.localConfigInfoProcessor.Start(s.diamondConfigure.GetFilePath() + "/" + DataDir)
 
@@ -114,13 +116,12 @@ func (s *Subscriber) Close() {
 	if !s.isRun {
 		return
 	}
-	log.Println("start close subscriber")
 
 	s.localConfigInfoProcessor.Stop()
 	s.serverAddressProcessor.Stop()
 	s.isRun = false
 	maputil.ClearSyncMap(s.cache)
-	log.Println("subscriber closed")
+	logger.Logger.WithFields(logrus.Fields{}).Info("subscriber closed")
 	s.Unlock()
 }
 
@@ -176,12 +177,13 @@ func (s *Subscriber) RemoveDataId(dataId, group string) {
 	}
 	cacheDatas, _ := value.(sync.Map)
 	cacheDatas.Delete(group)
-
-	log.Println("删除了DataID[" + dataId + "]中的Group: " + group)
 	if maputil.LengthOfSyncMap(cacheDatas) == 0 {
 		s.cache.Delete(dataId)
-		log.Println("删除了DataID[" + dataId + "]")
 	}
+	logger.Logger.WithFields(logrus.Fields{
+		"dataId": dataId,
+		"group":  group,
+	}).Info("remove watch")
 }
 
 //GetDataIds get dataIds on watching
@@ -213,7 +215,11 @@ func (s *Subscriber) GetConfigureInformation(dataId, group string, timeout int) 
 	}
 
 	if err != nil {
-		log.Println("获取本地配置文件出错", err)
+		logger.Logger.WithFields(logrus.Fields{
+			"dataId": dataId,
+			"group":  group,
+			"err":    err,
+		}).Info("get local file config failed")
 	}
 	result, err := s.getConfigureInfomation(dataId, group, timeout, false)
 	if err == nil && result != "" {
@@ -253,17 +259,26 @@ func (s *Subscriber) PublishConfigureInformation(dataId, group, content string) 
 	timeout := s.diamondConfigure.GetReceiveWaitTime()
 	waitTime := 0
 	retryTimes := s.diamondConfigure.GetRetrieveDataRetryTimes()
-	log.Println("设定的获取配置数据的重试次数为：", retryTimes)
 	// 已经尝试过的次数
 	tryCount := 0
 	for 0 == timeout || timeout > waitTime {
 		// 尝试次数加1
 		tryCount++
 		if tryCount > retryTimes+1 {
-			log.Println("已经到达了设定的重试次数")
+			logger.Logger.WithFields(logrus.Fields{
+				"dataId":     dataId,
+				"group":      group,
+				"retryTimes": retryTimes,
+			}).Info("reach retryTimes but not publish config finished yet")
 			break
 		}
-		log.Println(fmt.Sprintf("获取配置数据，第%v,次尝试, waitTime:%v", tryCount, waitTime))
+
+		logger.Logger.WithFields(logrus.Fields{
+			"dataId":   dataId,
+			"group":    group,
+			"tryCount": tryCount,
+			"waitTime": waitTime,
+		}).Debug("publish config ")
 
 		// 设置超时时间
 		onceTimeOut := s.getOnceTimeOut(waitTime, timeout)
@@ -274,7 +289,12 @@ func (s *Subscriber) PublishConfigureInformation(dataId, group, content string) 
 		domainNameList := s.diamondConfigure.GetDomainNameList()
 		domainName, ok := domainNameList.Get(int(pos))
 		if !ok || domainName == nil {
-			log.Println("无可用domainName")
+			logger.Logger.WithFields(logrus.Fields{
+				"dataId":         dataId,
+				"group":          group,
+				"domainNameList": domainNameList,
+			}).Debug("no available domain server")
+
 			s.rotateToNextDomain()
 			continue
 		}
@@ -285,13 +305,25 @@ func (s *Subscriber) PublishConfigureInformation(dataId, group, content string) 
 		params.Set(CONTENT, content)
 		req, err := http.NewRequest("POST", domainNamePort, ioutil.NopCloser(strings.NewReader(params.Encode())))
 		if err != nil {
-			log.Println("Can't NewRequest", err)
+			logger.Logger.WithFields(logrus.Fields{
+				"dataId":         dataId,
+				"group":          group,
+				"err":            err,
+				"domainNamePort": domainNamePort,
+				"params":         params,
+			}).Error("Can't NewRequest")
 			continue
 		}
 		req.Header.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
 		resp, err := client.Do(req)
 		if err != nil {
-			log.Println("未知异常", err)
+			logger.Logger.WithFields(logrus.Fields{
+				"dataId": dataId,
+				"group":  group,
+				"err":    err,
+				"req":    req,
+			}).Error("invoke http failed")
+
 			s.rotateToNextDomain()
 			continue
 		}
@@ -299,7 +331,6 @@ func (s *Subscriber) PublishConfigureInformation(dataId, group, content string) 
 		if statusCode == http.StatusOK {
 			return nil
 		}
-		log.Println("publish config info timeoutHTTP State: ", statusCode)
 		s.rotateToNextDomain()
 		resp.Body.Close()
 	}
@@ -330,13 +361,15 @@ func (s *Subscriber) rotateCheckConfigInfo() {
 		for {
 			<-ticker.C
 			if !s.isRun {
-				log.Println("DiamondSubscriber不在运行状态中，退出查询循环")
+				logger.Logger.WithFields(logrus.Fields{}).Error("subscriber isn't running, program will exit")
 				return
 			}
 			s.checkLocalConfigInfo()
 			err := s.checkDiamondServerConfigInfo()
 			if err != nil {
-				log.Println("循环探测发生异常", err)
+				logger.Logger.WithFields(logrus.Fields{
+					"err": err,
+				}).Error("checkDiamondServerConfigInfo return err")
 			}
 			s.checkSnapshot()
 		}
@@ -351,7 +384,9 @@ func (s *Subscriber) checkDiamondServerConfigInfo() error {
 	}
 
 	if nil == updateDataIdGroupPairs || updateDataIdGroupPairs.Size() == 0 {
-		log.Println("没有被修改的DataID")
+		if err != nil {
+			logger.Logger.WithFields(logrus.Fields{}).Debug("no config changed")
+		}
 		return nil
 	}
 	// 对于每个发生变化的DataID，都请求一次对应的配置信息
@@ -385,12 +420,14 @@ func (s *Subscriber) checkDiamondServerConfigInfo() error {
 func (s *Subscriber) receiveConfigInfo(cacheData *configinfo.CacheData) {
 	go func() {
 		if !s.isRun {
-			log.Println("DiamondSubscriber不在运行状态中，退出查询循环")
+			logger.Logger.WithFields(logrus.Fields{}).Error("subscriber isn't running, program will exit")
 			return
 		}
 		configInfo, err := s.getConfigureInfomation(cacheData.DataId(), cacheData.Group(), s.diamondConfigure.GetReceiveWaitTime(), true)
 		if err != nil {
-			log.Println("向Diamond服务器索要配置信息的过程抛异常", err)
+			logger.Logger.WithFields(logrus.Fields{
+				"err": err,
+			}).Error("getConfigureInfomation failed")
 			return
 		}
 
@@ -399,10 +436,9 @@ func (s *Subscriber) receiveConfigInfo(cacheData *configinfo.CacheData) {
 		}
 
 		if nil == s.subscriberListener {
-			log.Println("null == subscriberListener")
+			logger.Logger.WithFields(logrus.Fields{}).Info("subscriberListener is empty")
 			return
 		}
-
 		s.popConfigInfo(cacheData, configInfo)
 	}()
 }
@@ -433,17 +469,26 @@ func (s *Subscriber) getConfigureInfomation(dataId, group string, timeout int, s
 	waitTime := 0
 	cacheData := s.getCacheData(dataId, group)
 	retryTimes := s.diamondConfigure.GetRetrieveDataRetryTimes()
-	log.Println("设定的获取配置数据的重试次数为：", retryTimes)
 	// 已经尝试过的次数
 	tryCount := 0
 	for 0 == timeout || timeout > waitTime {
 		// 尝试次数加1
 		tryCount++
 		if tryCount > retryTimes+1 {
-			log.Println("已经到达了设定的重试次数")
+			logger.Logger.WithFields(logrus.Fields{
+				"dataId":     dataId,
+				"group":      group,
+				"retryTimes": retryTimes,
+			}).Info("reach retryTimes but not publish config finished yet")
 			break
 		}
-		log.Println(fmt.Sprintf("获取配置数据，第%v,次尝试, waitTime:%v", tryCount, waitTime))
+
+		logger.Logger.WithFields(logrus.Fields{
+			"dataId":   dataId,
+			"group":    group,
+			"tryCount": tryCount,
+			"waitTime": waitTime,
+		}).Debug("get config ")
 
 		// 设置超时时间
 		onceTimeOut := s.getOnceTimeOut(waitTime, timeout)
@@ -454,17 +499,23 @@ func (s *Subscriber) getConfigureInfomation(dataId, group string, timeout int, s
 		domainNameList := s.diamondConfigure.GetDomainNameList()
 		domainName, ok := domainNameList.Get(int(pos))
 		if !ok || domainName == nil {
-			log.Println("无可用domainName")
+			logger.Logger.WithFields(logrus.Fields{
+				"dataId":         dataId,
+				"group":          group,
+				"domainNameList": domainNameList,
+			}).Debug("no available domain server")
 			s.rotateToNextDomain()
 			continue
 		}
 		domainNamePort := urlutil.GetURL(domainName.(string), s.diamondConfigure.GetPort(), GetConfigUrl)
-		//params := url.Values{}
-		//params.Set(DATAID, dataId)
-		//params.Set(GROUP, group)
 		req, err := http.NewRequest("GET", domainNamePort, nil)
 		if err != nil {
-			log.Println("Can't NewRequest", err)
+			logger.Logger.WithFields(logrus.Fields{
+				"dataId":         dataId,
+				"group":          group,
+				"err":            err,
+				"domainNamePort": domainNamePort,
+			}).Error("Can't NewRequest")
 			continue
 		}
 		q := req.URL.Query()
@@ -482,7 +533,12 @@ func (s *Subscriber) getConfigureInfomation(dataId, group string, timeout int, s
 		req.Header.Set(AcceptEncoding, "gzip,deflate")
 		resp, err := client.Do(req)
 		if err != nil {
-			log.Println("未知异常", err)
+			logger.Logger.WithFields(logrus.Fields{
+				"dataId": dataId,
+				"group":  group,
+				"err":    err,
+				"req":    req,
+			}).Error("invoke http failed")
 			s.rotateToNextDomain()
 			continue
 		}
@@ -493,7 +549,12 @@ func (s *Subscriber) getConfigureInfomation(dataId, group string, timeout int, s
 		case http.StatusNotModified:
 			return s.getNotModified(dataId, cacheData, resp)
 		case http.StatusNotFound:
-			log.Println("没有找到DataID为:" + dataId + "对应的配置信息")
+			logger.Logger.WithFields(logrus.Fields{
+				"dataId": dataId,
+				"group":  group,
+				"resp":   resp,
+				"req":    req,
+			}).Warn("invoke http can't find config")
 			cacheData.SetMD5("")
 			s.snapshotConfigInfoProcessor.RemoveSnapshot(dataId, group)
 			return "", nil
@@ -501,7 +562,12 @@ func (s *Subscriber) getConfigureInfomation(dataId, group string, timeout int, s
 			s.rotateToNextDomain()
 			break
 		default:
-			log.Println("获取修改过的DataID列表的请求回应的HTTP State: ", statusCode)
+			logger.Logger.WithFields(logrus.Fields{
+				"dataId": dataId,
+				"group":  group,
+				"resp":   resp,
+				"req":    req,
+			}).Warn("rotate to default case")
 			s.rotateToNextDomain()
 		}
 		resp.Body.Close()
@@ -533,7 +599,6 @@ func (s *Subscriber) getNotModified(dataId string, cacheData *configinfo.CacheDa
 
 	cacheData.SetMD5(md5)
 	s.changeSpacingInterval(header)
-	log.Println("DataID: " + dataId + ", 对应的configInfo没有变化")
 	return "", nil
 }
 
@@ -576,8 +641,6 @@ func (s *Subscriber) getSuccess(dataId, group string, cacheData *configinfo.Cach
 	builder.WriteString(group)
 	builder.WriteString(" ,content=")
 	builder.WriteString(configInfo)
-	log.Println(builder.String())
-
 	return configInfo, nil
 }
 
@@ -590,7 +653,9 @@ func (s *Subscriber) changeSpacingInterval(header http.Header) {
 	if err != nil {
 		s.diamondConfigure.SetPollingIntervalTime(int64(interval))
 	} else {
-		log.Println("设置下次间隔时间失败", err)
+		logger.Logger.WithFields(logrus.Fields{
+			"header": header,
+		}).Error("SetPollingIntervalTime failed")
 	}
 }
 
@@ -641,11 +706,17 @@ func (s *Subscriber) checkLocalConfigInfo() {
 			}
 			configInfo, err := s.getLocalConfigureInfomation(cacheData)
 			if err != nil {
-				log.Println("向本地索要配置信息的过程抛异常", err)
+				logger.Logger.WithFields(logrus.Fields{
+					"err": err,
+					"req": cacheData,
+				}).Info("getLocalConfigureInfomation failed")
 				return true
 			}
 			if configInfo != "" {
-				log.Println("本地配置信息被读取, dataId:" + cacheData.DataId() + ", group:" + cacheData.Group())
+				logger.Logger.WithFields(logrus.Fields{
+					"err": err,
+					"req": cacheData,
+				}).Info("getLocalConfigureInfomation success")
 				s.popConfigInfo(cacheData, configInfo)
 				return true
 			}
@@ -702,13 +773,21 @@ func (s *Subscriber) checkUpdateDataIds(timeout int) (*hashset.Set, error) {
 		params.Set(probeModifyRequest, probeUpdateString)
 		req, err := http.NewRequest("POST", domainNamePort, strings.NewReader(params.Encode()))
 		if err != nil {
-			log.Println("Can't NewRequest", err)
+			logger.Logger.WithFields(logrus.Fields{
+				"probeUpdateString": probeUpdateString,
+				"err":               err,
+				"domainNamePort":    domainNamePort,
+			}).Error("Can't NewRequest")
 			continue
 		}
 		req.Header.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
 		resp, err := client.Do(req)
 		if err != nil {
-			log.Println("未知异常", err)
+			logger.Logger.WithFields(logrus.Fields{
+				"req":  req,
+				"err":  err,
+				"resp": resp,
+			}).Error("client.Do failed")
 			continue
 		}
 		statusCode := resp.StatusCode
@@ -719,7 +798,11 @@ func (s *Subscriber) checkUpdateDataIds(timeout int) (*hashset.Set, error) {
 			s.rotateToNextDomain()
 			break
 		default:
-			log.Println("获取修改过的DataID列表的请求回应的HTTP State: ", statusCode)
+			logger.Logger.WithFields(logrus.Fields{
+				"probeUpdateString": probeUpdateString,
+				"resp":              resp,
+				"req":               req,
+			}).Warn("rotate to default case")
 			s.rotateToNextDomain()
 		}
 		resp.Body.Close()
@@ -801,13 +884,15 @@ func (s *Subscriber) rotateToNextDomain() {
 		index = -index
 	}
 	if domainNameCount == 0 {
-		log.Println("diamond server address is empty, please concat admin")
+		logger.Logger.WithFields(logrus.Fields{}).Error("diamond server address is empty, please concat admin")
 		return
 	}
 	atomic.StoreInt64(&s.domainNamePos, index%int64(domainNameCount))
 	if domainNameList.Size() > 0 {
 		domainName, _ := domainNameList.Get(int(atomic.LoadInt64(&s.domainNamePos)))
-		log.Println("rotateTo doaminName：", domainName)
+		logger.Logger.WithFields(logrus.Fields{
+			"domainName": domainName,
+		}).Error("rotateTo doaminName")
 	}
 }
 
@@ -825,7 +910,11 @@ func (s *Subscriber) saveSnapshot(dataId, group, config string) {
 	if config != "" {
 		err := s.snapshotConfigInfoProcessor.SaveSnaptshot(dataId, group, config)
 		if err != nil {
-			log.Println("保存snapshot出错,dataId="+dataId+",group="+group, err)
+			logger.Logger.WithFields(logrus.Fields{
+				"dataId": dataId,
+				"group":  group,
+				"err":    err,
+			}).Error("SaveSnaptshot failed")
 		}
 	}
 }
@@ -868,7 +957,11 @@ func (s *Subscriber) getSnapshotConfiginfomation(dataId, group string) string {
 	cacheData := s.getCacheData(dataId, group)
 	config, err := s.snapshotConfigInfoProcessor.GetConfigInfomation(dataId, group)
 	if err != nil {
-		log.Println("get snapshot failed， dataId="+dataId+",group="+group, err)
+		logger.Logger.WithFields(logrus.Fields{
+			"dataId": dataId,
+			"group":  group,
+			"err":    err,
+		}).Error("snapshotConfigInfoProcessor.GetConfigInfomation failed")
 		return ""
 	}
 	if config != "" && cacheData != nil {
@@ -891,14 +984,22 @@ func convertStringToSet(modifiedDataIdsString string) *hashset.Set {
 	}
 	modifiedDataIdsString, err := url.QueryUnescape(modifiedDataIdsString)
 	if err != nil {
-		log.Println("reader.Read modifiedDataIdsString faield", err)
+		logger.Logger.WithFields(logrus.Fields{
+			"err":                   err,
+			"modifiedDataIdsString": modifiedDataIdsString,
+		}).Error("reader.Read modifiedDataIdsString faield")
 	}
 
 	if modifiedDataIdsString != "" {
 		if strings.HasPrefix(modifiedDataIdsString, "OK") {
-			log.Println("result:" + modifiedDataIdsString)
+			logger.Logger.WithFields(logrus.Fields{
+				"modifiedDataIdsString": modifiedDataIdsString,
+			}).Debug("OK result")
+
 		} else {
-			log.Println("data change:" + modifiedDataIdsString)
+			logger.Logger.WithFields(logrus.Fields{
+				"modifiedDataIdsString": modifiedDataIdsString,
+			}).Debug("data changed")
 		}
 	}
 
@@ -928,12 +1029,16 @@ func getContent(resp *http.Response) string {
 		var buf [1024 * 4]byte
 		reader, err := gzip.NewReader(resp.Body)
 		if err != nil {
-			log.Println("unzip failed", err)
+			logger.Logger.WithFields(logrus.Fields{
+				"err": err,
+			}).Error("unzip failed")
 		} else {
 			for {
 				n, err := reader.Read(buf[:])
 				if err != nil || n == 0 {
-					log.Println("unzip failed or finished", err)
+					logger.Logger.WithFields(logrus.Fields{
+						"err": err,
+					}).Error("unzip failed or finished")
 					break
 				}
 				contentBuilder.WriteString(string(buf[:n]))
@@ -943,7 +1048,9 @@ func getContent(resp *http.Response) string {
 	} else {
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			log.Println("read resp.Body failed", err)
+			logger.Logger.WithFields(logrus.Fields{
+				"err": err,
+			}).Error("read resp.Body failed")
 		}
 		content := string(body)
 		if content == "" {

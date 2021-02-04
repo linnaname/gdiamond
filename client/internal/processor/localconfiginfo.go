@@ -2,10 +2,11 @@ package processor
 
 import (
 	"gdiamond/client/internal/configinfo"
+	"gdiamond/client/internal/logger"
 	"gdiamond/util/fileutil"
 	"gdiamond/util/filewatcher"
 	"github.com/fsnotify/fsnotify"
-	"log"
+	"github.com/sirupsen/logrus"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -70,7 +71,10 @@ func (p *LocalConfigInfoProcessor) GetLocalConfigureInformation(cacheData *confi
 	}
 
 	if force {
-		log.Println("主动从本地获取配置数据, dataId:" + cacheData.DataId() + ", group:" + cacheData.Group())
+		logger.Logger.WithFields(logrus.Fields{
+			"dataId": cacheData.DataId(),
+			"group":  cacheData.Group(),
+		}).Info("force get config from local file")
 		return fileutil.GetFileContent(filePath)
 	}
 
@@ -83,11 +87,17 @@ func (p *LocalConfigInfoProcessor) GetLocalConfigureInformation(cacheData *confi
 		cacheData.SetLocalConfigInfoFile(filePath)
 		cacheData.SetLocalConfigInfoVersion(p.existFiles[filePath])
 		cacheData.SetUseLocalConfigInfo(true)
-		log.Println("本地配置数据发生变化, dataId:" + cacheData.DataId() + ", group:" + cacheData.Group())
+		logger.Logger.WithFields(logrus.Fields{
+			"dataId": cacheData.DataId(),
+			"group":  cacheData.Group(),
+		}).Debug("local file config changed")
 		return content, nil
 	}
 	cacheData.SetUseLocalConfigInfo(true)
-	log.Println("本地配置数据没有发生变化, dataId:" + cacheData.DataId() + ", group:" + cacheData.Group())
+	logger.Logger.WithFields(logrus.Fields{
+		"dataId": cacheData.DataId(),
+		"group":  cacheData.Group(),
+	}).Debug("local file config no change")
 	return "", nil
 }
 
@@ -111,7 +121,9 @@ func (p *LocalConfigInfoProcessor) startCheckLocalDir(filePath string) error {
 			case e := <-rw.Events:
 				p.processEvents(e)
 			case e := <-rw.Errors:
-				log.Println("file watch err:", e)
+				logger.Logger.WithFields(logrus.Fields{
+					"e": e,
+				}).Error("file watch err")
 			}
 		}
 	}()
@@ -120,17 +132,28 @@ func (p *LocalConfigInfoProcessor) startCheckLocalDir(filePath string) error {
 
 func (p *LocalConfigInfoProcessor) processEvents(e fsnotify.Event) {
 	grandpaDir, err := fileutil.GetGrandpaDir(e.Name)
-	log.Println("file watch GetGrandpaDir:", err)
+
+	logger.Logger.WithFields(logrus.Fields{
+		"err":   err,
+		"event": e,
+	}).Info("GetGrandpaDir failed")
 
 	if e.Op&fsnotify.Create == fsnotify.Create || e.Op&fsnotify.Write == fsnotify.Write {
-		log.Println("创建或写入文件 : ", e.Name)
+		logger.Logger.WithFields(logrus.Fields{
+			"filename": e.Name,
+		}).Info("create or write file")
+
 		if BaseDir != grandpaDir {
-			log.Println("无效的文件进入监控目录: " + e.Name)
+			logger.Logger.WithFields(logrus.Fields{
+				"dir": e.Name,
+			}).Warn("invalid watch dir")
 			return
 		}
 		p.existFiles[e.Name] = time.Now().Unix()
 	} else if e.Op&fsnotify.Remove == fsnotify.Remove {
-		log.Println("delete file : ", e.Name)
+		logger.Logger.WithFields(logrus.Fields{
+			"filename": e.Name,
+		}).Info("delete file")
 		if BaseDir == grandpaDir {
 			// 删除的是文件
 			delete(p.existFiles, e.Name)
@@ -145,7 +168,9 @@ func (p *LocalConfigInfoProcessor) processEvents(e fsnotify.Event) {
 			}
 		}
 	} else if e.Op&fsnotify.Rename == fsnotify.Rename {
-		log.Println("rename file : ", e.Name)
+		logger.Logger.WithFields(logrus.Fields{
+			"filename": e.Name,
+		}).Info("rename file")
 	}
 }
 

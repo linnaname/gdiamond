@@ -8,11 +8,12 @@ import (
 	"errors"
 	"fmt"
 	"gdiamond/client/internal/configinfo"
+	"gdiamond/client/internal/logger"
 	"gdiamond/util/fileutil"
 	"gdiamond/util/urlutil"
 	dll "github.com/emirpasic/gods/lists/doublylinkedlist"
+	"github.com/sirupsen/logrus"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -80,16 +81,17 @@ func (p *ServerAddressProcessor) acquireServerAddressFromLocal() error {
 				acquireCount++
 				if p.acquireServerAddressOnce(acquireCount) {
 					p.storeServerAddressesToLocal()
-					log.Println("在同步获取服务器列表时，向日常ConfigServer服务器获取到了服务器列表")
+					logger.Logger.WithFields(logrus.Fields{}).Debug("get server address from namesrv success")
+
 				} else {
 					return errors.New("当前没有可用的服务器列表")
 				}
 			} else {
 				p.storeServerAddressesToLocal()
-				log.Println("在同步获取服务器列表时，向线上ConfigServer服务器获取到了服务器列表")
+				logger.Logger.WithFields(logrus.Fields{}).Debug("get server address from namesrv success")
 			}
 		} else {
-			log.Println("在同步获取服务器列表时，由于本地指定了服务器列表，不向ConfigServer服务器同步获取服务器列表")
+			logger.Logger.WithFields(logrus.Fields{}).Debug("get server address from local server address file")
 		}
 	}
 	return nil
@@ -107,16 +109,16 @@ func (p *ServerAddressProcessor) synAcquireServerAddress() error {
 			if p.acquireServerAddressOnce(acquireCount) {
 				// 存入本地文件
 				p.storeServerAddressesToLocal()
-				log.Println("在同步获取服务器列表时，向日常ConfigServer服务器获取到了服务器列表")
+				logger.Logger.WithFields(logrus.Fields{}).Debug("get server address from namesrv success")
 			} else {
-				log.Println("从本地获取Diamond地址列表")
+				logger.Logger.WithFields(logrus.Fields{}).Debug("get server address from local server address file")
 				p.reloadServerAddresses()
 				if domainNameList.Size() == 0 {
 					return errors.New("当前没有可用的服务器列表，请检查~/diamond/ServerAddress文件")
 				}
 			}
 		} else {
-			log.Println("在同步获取服务器列表时，向线上ConfigServer服务器获取到了服务器列表")
+			logger.Logger.WithFields(logrus.Fields{}).Debug("get server address from namesrv success")
 			// 存入本地文件
 			p.storeServerAddressesToLocal()
 		}
@@ -130,7 +132,11 @@ func (p *ServerAddressProcessor) storeServerAddressesToLocal() {
 	f, err := fileutil.CreateFileIfNessary(filePath)
 	defer f.Close()
 	if err != nil {
-		log.Println("存储服务器地址到本地文件失败", err)
+		logger.Logger.WithFields(logrus.Fields{
+			"err":            err,
+			"domainNameList": domainNameList,
+			"filePath":       filePath,
+		}).Error("storeServerAddressesToLocal failed")
 		return
 	}
 	w := bufio.NewWriter(f)
@@ -168,12 +174,18 @@ func (p *ServerAddressProcessor) acquireServerAddressOnce(acquireCount int) bool
 	apiURL := urlutil.GetURL(configServerAddress, port, configHTTPURIFile)
 	req, err := http.NewRequest("GET", apiURL, nil)
 	if err != nil {
-		log.Println("NewRequest error", err)
+		logger.Logger.WithFields(logrus.Fields{
+			"err":            err,
+			"domainNameList": apiURL,
+		}).Error("NewRequest failed")
 		return false
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println("没有可用的新服务器列表", err)
+		logger.Logger.WithFields(logrus.Fields{
+			"err": err,
+			"req": req,
+		}).Error("client.Do failed")
 		return false
 	}
 
@@ -193,13 +205,17 @@ func (p *ServerAddressProcessor) acquireServerAddressOnce(acquireCount int) bool
 			}
 			resp.Body.Close()
 			if newDomainNameList.Size() > 0 {
-				log.Println("更新使用的服务器列表")
+				logger.Logger.WithFields(logrus.Fields{
+					"newDomainNameList": newDomainNameList,
+				}).Debug("update DomainNameList")
 				p.diamondConfigure.SetDomainNameList(newDomainNameList)
 				return true
 			}
 		}
 	}
-	log.Println("没有可用的新服务器列表", err)
+	logger.Logger.WithFields(logrus.Fields{
+		"err": err,
+	}).Error("no useful DomainNameList")
 	return false
 }
 
@@ -210,7 +226,7 @@ func (p *ServerAddressProcessor) asynAcquireServerAddress() {
 		for {
 			<-ticker.C
 			if !p.isRun {
-				log.Println("ServerAddressProcessor不在运行状态，无法异步获取服务器地址列表")
+				logger.Logger.WithFields(logrus.Fields{}).Error("ServerAddressProcessor isn't running,can't get name server domain list")
 				continue
 			}
 			acquireCount := 0

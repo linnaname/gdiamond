@@ -47,21 +47,28 @@ git clone https://github.com/linnaname/gdiamond.git
 
 #### client使用 ####
 
-1.发布或更新配置
+1.修改etc/hosts
+
+增加 `127.0.0.1 gdiamond.namesrv.net`
+127.0.0.1 为namesrv的ip地址，gdiamond.namesrv.net指无状态的namesrv http服务器，client代码中写死了为gdiamond.namesrv.net，这里也用这个域名
+
+进行集群部署时，可修改为您真正的域名地址，[代码地址](https://github.com/linnaname/gdiamond/blob/master/client/internal/processor/serveraddress.go)
+
+2.发布或更新配置
 ```golang
-dm := NewManager()
-b := dm.PublishConfig(dataId, group, content)
+cli := client.NewClient()
+b := cli.PublishConfig(dataId, group, content)
 ```
 通过b的真假值判断是否发布或修改成功
 
-2.读取配置
+3.读取配置
 ```golang
-dm := NewManager()
-content := dm.GetConfig(dataId, group, 1000)
+cli := client.NewClient()
+content := cli.GetConfig(dataId, group, 1000)
 ```
 content就是配置内容
 
-3.读取配置并设置监听器
+4.读取配置并设置监听器
 
 实现监听器 ManagerListener
 ```golang
@@ -75,10 +82,11 @@ func (a A) ReceiveConfigInfo(configInfo string) {
 
 读取并监听
 ```golang
-dm := NewManager()
-content := dm.GetConfigAndSetListener(dataId, group, 1000, A{})
+cli := client.NewClient()
+content := cli.GetConfigAndSetListener(dataId, group, 1000, A{})
 ```
 content为配置内容，当然需要程序常驻才可以监听
+
 
 ## 性能测试 ##
 
@@ -113,7 +121,7 @@ diamond和[disconf](https://github.com/knightliao/disconf)
 * localfile测试和localfile变更监听测试  done
 * client 和 server从namesrv获取全量可用server逻辑  done
 * client user api简化     done
-* 日志系统完善
+* 日志系统完善 done
 * 管理页面（宜搭）
 * namespace（租户）增加
 * daily/pre/production环境增加

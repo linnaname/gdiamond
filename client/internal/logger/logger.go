@@ -1,4 +1,4 @@
-package log
+package logger
 
 import (
 	"gdiamond/util/fileutil"
@@ -9,16 +9,15 @@ import (
 
 const (
 	logDir  = "logs"
-	logFile = "namesrv.log"
+	logFile = "client.log"
 )
 
 var Logger = logrus.New()
 
-//SetupLogger setup logger
-func SetupLogger() {
+//SetupLogger setup logrus path and format
+func SetupLogger(baseDir string) {
 	Logger.SetLevel(logrus.DebugLevel)
 	Logger.SetFormatter(&logrus.JSONFormatter{})
-	baseDir := fileutil.GetCurrentDirectory() + "/namesrv"
 	filePath := filepath.Join(baseDir, logDir)
 	fileutil.CreateDirIfNecessary(filePath)
 	file, err := os.OpenFile(filepath.Join(filePath, logFile), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)

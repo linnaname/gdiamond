@@ -3,9 +3,10 @@ package listener
 import (
 	"errors"
 	"gdiamond/client/internal/configinfo"
+	"gdiamond/client/internal/logger"
 	"gdiamond/util/maputil"
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
-	"log"
+	"github.com/sirupsen/logrus"
 	"sync"
 )
 
@@ -34,13 +35,19 @@ func (d DefaultSubscriberListener) ReceiveConfigInfo(configureInfomation *config
 	group := configureInfomation.Group
 
 	if dataId == "" {
-		log.Println("[receiveConfigInfo] dataId is null")
+		logger.Logger.WithFields(logrus.Fields{}).Error("receiveConfigInfo dataId can't  be empty")
 		return
 	}
 	key := makeKey(dataId, group)
 	value, ok := d.allListeners.Load(key)
 	if !ok || value == nil {
-		log.Println("[notify-listener] no listener for dataId=" + dataId + ", group=" + group)
+		if dataId == "" {
+			logger.Logger.WithFields(logrus.Fields{
+				"dataId": dataId,
+				"group":  group,
+			}).Info("[notify-listener] no listener")
+			return
+		}
 		return
 	}
 	listeners, _ := value.(*singlylinkedlist.List)
@@ -48,7 +55,10 @@ func (d DefaultSubscriberListener) ReceiveConfigInfo(configureInfomation *config
 		listener, _ := value.(ManagerListener)
 		err := notifyListener(configureInfomation, listener)
 		if err != nil {
-			log.Println("call listener error, dataId="+dataId+", group="+group, err)
+			logger.Logger.WithFields(logrus.Fields{
+				"dataId": dataId,
+				"group":  group,
+			}).Info("[notify-listener] call listener failed")
 		}
 	})
 }
@@ -97,7 +107,11 @@ func notifyListener(configureInfomation *configinfo.ConfigureInformation, listen
 	dataId := configureInfomation.DataId
 	group := configureInfomation.Group
 	content := configureInfomation.ConfigureInfo
-	log.Println("[notify-listener] call listener  for " + dataId + ", " + group + ", " + content)
+	logger.Logger.WithFields(logrus.Fields{
+		"dataId":  dataId,
+		"group":   group,
+		"content": content,
+	}).Debug("[notify-listener] calling listener")
 	//notify listener async
 	go listener.ReceiveConfigInfo(content)
 
