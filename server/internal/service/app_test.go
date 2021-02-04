@@ -2,8 +2,8 @@ package service
 
 import (
 	"fmt"
-	"gdiamond/server/common"
-	"gdiamond/server/model"
+	"gdiamond/server/internal/common"
+	"gdiamond/server/internal/model"
 	"gdiamond/util/maputil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -17,7 +17,7 @@ type _SS struct {
 
 func (s *_SS) SetupSuite() {
 	fmt.Printf("SetupSuite() ...\n")
-	common.InitConfig()
+	common.ParseCmdAndInitConfig()
 	common.InitDBConn()
 }
 

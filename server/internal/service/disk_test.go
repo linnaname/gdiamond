@@ -1,7 +1,8 @@
 package service
 
 import (
-	"gdiamond/server/model"
+	"fmt"
+	"gdiamond/server/internal/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -24,4 +25,5 @@ func TestRemoveConfigInfoFromDisk(t *testing.T) {
 
 func TestGetFilePath(t *testing.T) {
 	assert.NotEmpty(t, GetFilePath("group/dataID"))
+	fmt.Println(GetFilePath(""))
 }

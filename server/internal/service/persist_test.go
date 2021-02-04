@@ -3,8 +3,8 @@ package service
 import (
 	"crypto/md5"
 	"fmt"
-	"gdiamond/server/common"
-	"gdiamond/server/model"
+	"gdiamond/server/internal/common"
+	"gdiamond/server/internal/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -16,7 +16,7 @@ type _Suite struct {
 
 func (s *_Suite) SetupSuite() {
 	fmt.Printf("SetupSuite() ...\n")
-	common.InitConfig()
+	common.ParseCmdAndInitConfig()
 	common.InitDBConn()
 }
 

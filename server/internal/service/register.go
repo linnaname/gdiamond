@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"gdiamond/common/namesrv"
 	"gdiamond/server/internal/common"
+	"gdiamond/server/internal/server"
 	"gdiamond/util/netutil"
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
+	"github.com/sirupsen/logrus"
 	"github.com/smallnest/goframe"
 	"log"
 	"net"
@@ -25,12 +27,14 @@ func SetupRegisterTask() error {
 	register := &Register{}
 	nameServerAddressList := common.NameServerAddressList
 	if nameServerAddressList == nil || nameServerAddressList.Empty() {
-		log.Println("nameServerAddressList can't be empty!")
 		return errors.New("nameServerAddressList can't be empty")
 	}
 
 	//register first
 	register.RegisterServerAll(nameServerAddressList)
+	log.Println("Finished first RegisterServerAll")
+	server.Logger.WithFields(logrus.Fields{}).Info("Finished first RegisterServerAll")
+
 	ticker := time.NewTicker(time.Second * 30)
 	go func() {
 		defer ticker.Stop()
@@ -74,7 +78,12 @@ func registerServer(namesrvAddr string, timeoutMills int, request namesrv.Reques
 	//conn.(*net.TCPConn).SetKeepAlive(true)
 	//conn.(*net.TCPConn).SetKeepAlivePeriod(time.Second * 10)
 	if err != nil {
-		log.Println("DialTimeout err:", err)
+		server.Logger.WithFields(logrus.Fields{
+			"err":          err.Error(),
+			"address":      address,
+			"timeoutMills": timeoutMills,
+			"request":      request,
+		}).Warn("registerServer DialTimeout")
 		return err
 	}
 	defer conn.Close()

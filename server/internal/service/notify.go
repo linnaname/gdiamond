@@ -1,10 +1,10 @@
 package service
 
 import (
-	"fmt"
 	"gdiamond/server/internal/common"
+	"gdiamond/server/internal/server"
+	"github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"time"
 )
@@ -19,7 +19,11 @@ func notifyConfigInfoChange(dataID, group string) {
 	for _, addr := range nodes {
 		urlString := generateNotifyConfigInfoPath(dataID, group, addr)
 		result, err := invokeURL(urlString)
-		log.Println("notify node and result", addr, result, err)
+		server.Logger.WithFields(logrus.Fields{
+			"err":    err.Error(),
+			"result": result,
+			"addr":   addr,
+		}).Info("notify node and result")
 	}
 }
 
@@ -38,7 +42,6 @@ func getNodeAddress() []string {
 	for i := range nodeAddress {
 		value, ok := nameServerAddressList.Get(i)
 		if value != nil && ok {
-			fmt.Println(fmt.Sprintf("vavalue:%v", value))
 			nodeAddress[i] = value.(string) + ":1210"
 		}
 	}
