@@ -55,7 +55,7 @@ func TestDefaultClient_GetConfig(t *testing.T) {
 
 func TestDefaultClient_PublishConfig(t *testing.T) {
 	dm := NewClient()
-	b := dm.PublishConfig("linna3", group, "test publish22")
+	b := dm.PublishConfig("linna3", group, "test publish442221")
 	assert.True(t, b)
 }
 

@@ -27,7 +27,7 @@ const (
 	//MaxUint max num of unit type
 	MaxUint = ^uint(0)
 	//PollingIntervalTime seconds
-	PollingIntervalTime = 15 * 4 * 2
+	PollingIntervalTime = 1
 	//DefaultGroup default group
 	DefaultGroup = "DEFAULT_GROUP"
 

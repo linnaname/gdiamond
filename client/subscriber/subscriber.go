@@ -352,7 +352,7 @@ func (s *Subscriber) loadCacheContentFromDiskLocal(cacheData *configinfo.CacheDa
  * 循环探测配置信息是否变化，如果变化，则再次向DiamondServer请求获取对应的配置信息
  */
 func (s *Subscriber) rotateCheckConfigInfo() {
-	duration := 30
+	duration := 1
 	if !s.bFirstCheck {
 		duration = int(s.diamondConfigure.GetPollingIntervalTime())
 	}

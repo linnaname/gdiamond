@@ -123,8 +123,8 @@ diamond和[disconf](https://github.com/knightliao/disconf)
 * client user api简化     done
 * 日志系统完善 done
 * namesrv可使用vip + 域名代替 done
-* 配置变更实时感知测试（秒级） 0
-* namespace（租户）增加 6
+* 配置变更实时感知测试（秒级） done
+* 租户 增加 6
 * daily/pre/production环境增加 7
 * 集群环境性能测试  1
 * mysql连接、gnet连接优化  2
@@ -132,3 +132,4 @@ diamond和[disconf](https://github.com/knightliao/disconf)
 * 用户权限 5
 * 管理页面（宜搭） 4
 * 历史记录，回滚  8
+* 增加fallback机制，在长轮询同时失效时也不会的导致一直无法拉取变更

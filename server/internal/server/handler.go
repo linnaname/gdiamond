@@ -210,13 +210,14 @@ func getProbeModify(w http.ResponseWriter, r *http.Request) {
 		if probeModify == "" {
 			goto ARG_ILLEGAL
 		} else {
-			modifyResult := getModify(probeModify)
-			if modifyResult != "" {
-				escapeURL := url.QueryEscape(modifyResult)
-				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(escapeURL))
-				return
-			}
+			//modifyResult := getModify(probeModify)
+			//if modifyResult != "" {
+			//	escapeURL := url.QueryEscape(modifyResult)
+			//	service.Logger.WithFields(logrus.Fields{}).Debug("getModify in")
+			//	w.WriteHeader(http.StatusOK)
+			//	w.Write([]byte(escapeURL))
+			//	return
+			//}
 
 			lptHeader := r.Header.Get(longPollingTimeOutHeader)
 			longPollingTimeout, _ := strconv.Atoi(lptHeader)
@@ -224,7 +225,7 @@ func getProbeModify(w http.ResponseWriter, r *http.Request) {
 
 			select {
 			case <-notifier:
-				modifyResult = getModify(probeModify)
+				modifyResult := getModify(probeModify)
 				if modifyResult != "" {
 					escapeURL := url.QueryEscape(modifyResult)
 					service.Logger.WithFields(logrus.Fields{}).Debug("event notifier")
