@@ -134,7 +134,7 @@ func (p *LocalConfigInfoProcessor) processEvents(e fsnotify.Event) {
 	grandpaDir, err := fileutil.GetGrandpaDir(e.Name)
 
 	logger.Logger.WithFields(logrus.Fields{
-		"err":   err,
+		"err":   err.Error(),
 		"event": e,
 	}).Info("GetGrandpaDir failed")
 

@@ -17,7 +17,7 @@ var Logger = logrus.New()
 //SetupLogger setup logger
 func SetupLogger() {
 	Logger.SetLevel(logrus.DebugLevel)
-	Logger.SetFormatter(&logrus.JSONFormatter{})
+	Logger.SetFormatter(&logrus.TextFormatter{})
 	baseDir := fileutil.GetCurrentDirectory() + "/namesrv"
 	filePath := filepath.Join(baseDir, logDir)
 	fileutil.CreateDirIfNecessary(filePath)

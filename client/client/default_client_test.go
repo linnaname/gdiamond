@@ -55,7 +55,7 @@ func TestDefaultClient_GetConfig(t *testing.T) {
 
 func TestDefaultClient_PublishConfig(t *testing.T) {
 	dm := NewClient()
-	b := dm.PublishConfig("linna3", group, "test listener999")
+	b := dm.PublishConfig("linna3", group, "test publish22")
 	assert.True(t, b)
 }
 
@@ -63,5 +63,5 @@ func TestDefaultClient_GetConfigAndSetListener(t *testing.T) {
 	dm := NewClient()
 	content := dm.GetConfigAndSetListener("linna3", group, 1000, A{})
 	assert.NotEmpty(t, content)
-	time.Sleep(time.Minute * 2)
+	time.Sleep(time.Minute * 20)
 }

@@ -17,7 +17,7 @@ var Logger = logrus.New()
 //SetupLogger setup logrus path and format
 func SetupLogger(baseDir string) {
 	Logger.SetLevel(logrus.DebugLevel)
-	Logger.SetFormatter(&logrus.JSONFormatter{})
+	Logger.SetFormatter(&logrus.TextFormatter{})
 	filePath := filepath.Join(baseDir, logDir)
 	fileutil.CreateDirIfNecessary(filePath)
 	file, err := os.OpenFile(filepath.Join(filePath, logFile), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)

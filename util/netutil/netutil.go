@@ -2,6 +2,8 @@ package netutil
 
 import (
 	"net"
+	"net/http"
+	"strings"
 )
 
 //GetLocalIP get local ip, if more than one return first one, if can't get it return empty string
@@ -17,6 +19,14 @@ func GetLocalIP() string {
 				return ipNet.IP.String()
 			}
 		}
+	}
+	return ""
+}
+
+//GetRemoteClientIP  get remote client ip address from reques
+func GetRemoteClientIP(r *http.Request) string {
+	if ip, _, err := net.SplitHostPort(strings.TrimSpace(r.RemoteAddr)); err == nil {
+		return ip
 	}
 	return ""
 }

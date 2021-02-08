@@ -122,12 +122,13 @@ diamond和[disconf](https://github.com/knightliao/disconf)
 * client 和 server从namesrv获取全量可用server逻辑  done
 * client user api简化     done
 * 日志系统完善 done
-* 管理页面（宜搭）
-* namespace（租户）增加
-* daily/pre/production环境增加
-* 集群环境性能测试
-* mysql连接、gnet连接优化
-* namesrv可使用vip + 域名代替？
-* namesrv和server优雅关闭
-* 用户权限
-* 历史记录，回滚
+* namesrv可使用vip + 域名代替 done
+* 配置变更实时感知测试（秒级） 0
+* namespace（租户）增加 6
+* daily/pre/production环境增加 7
+* 集群环境性能测试  1
+* mysql连接、gnet连接优化  2
+* namesrv和server优雅关闭 3
+* 用户权限 5
+* 管理页面（宜搭） 4
+* 历史记录，回滚  8

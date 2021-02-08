@@ -133,7 +133,7 @@ func (p *ServerAddressProcessor) storeServerAddressesToLocal() {
 	defer f.Close()
 	if err != nil {
 		logger.Logger.WithFields(logrus.Fields{
-			"err":            err,
+			"err":            err.Error(),
 			"domainNameList": domainNameList,
 			"filePath":       filePath,
 		}).Error("storeServerAddressesToLocal failed")
@@ -175,7 +175,7 @@ func (p *ServerAddressProcessor) acquireServerAddressOnce(acquireCount int) bool
 	req, err := http.NewRequest("GET", apiURL, nil)
 	if err != nil {
 		logger.Logger.WithFields(logrus.Fields{
-			"err":            err,
+			"err":            err.Error(),
 			"domainNameList": apiURL,
 		}).Error("NewRequest failed")
 		return false
@@ -183,7 +183,7 @@ func (p *ServerAddressProcessor) acquireServerAddressOnce(acquireCount int) bool
 	resp, err := client.Do(req)
 	if err != nil {
 		logger.Logger.WithFields(logrus.Fields{
-			"err": err,
+			"err": err.Error(),
 			"req": req,
 		}).Error("client.Do failed")
 		return false
@@ -213,9 +213,7 @@ func (p *ServerAddressProcessor) acquireServerAddressOnce(acquireCount int) bool
 			}
 		}
 	}
-	logger.Logger.WithFields(logrus.Fields{
-		"err": err,
-	}).Error("no useful DomainNameList")
+	logger.Logger.WithFields(logrus.Fields{}).Error("no useful DomainNameList")
 	return false
 }
 

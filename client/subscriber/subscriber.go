@@ -31,23 +31,24 @@ import (
 )
 
 const (
-	wordSeparator      = ","
-	lineSeparator      = ";"
-	probeModifyRequest = "Probe-Modify-Request"
-	dataID             = "dataId"
-	GROUP              = "group"
-	CONTENT            = "content"
-	IfModifiedSince    = "If-Modified-Since"
-	ContentMd5         = "Content-MD5"
-	AcceptEncoding     = "Accept-Encoding"
-	ContentEncoding    = "Content-Encoding"
-	LastModified       = "Last-Modified"
-	SpacingInterval    = "client-spacing-interval"
-	DataDir            = "data"     // local dir need to watch
-	SnapshotDir        = "snapshot" // last time succeed snapshot  dir
-	GetConfigUrl       = "diamond-server/config"
-	PublishConfigUrl   = "diamond-server/publishConfig"
-	GetProbeModifyUrl  = "diamond-server/getProbeModify"
+	wordSeparator            = ","
+	lineSeparator            = ";"
+	probeModifyRequest       = "Probe-Modify-Request"
+	dataID                   = "dataId"
+	GROUP                    = "group"
+	CONTENT                  = "content"
+	IfModifiedSince          = "If-Modified-Since"
+	ContentMd5               = "Content-MD5"
+	AcceptEncoding           = "Accept-Encoding"
+	ContentEncoding          = "Content-Encoding"
+	LastModified             = "Last-Modified"
+	SpacingInterval          = "client-spacing-interval"
+	DataDir                  = "data"     // local dir need to watch
+	SnapshotDir              = "snapshot" // last time succeed snapshot  dir
+	GetConfigUrl             = "diamond-server/config"
+	PublishConfigUrl         = "diamond-server/publishConfig"
+	GetProbeModifyUrl        = "diamond-server/getProbeModify"
+	longPollingTimeOutHeader = "Long-Polling-TimeOut"
 )
 
 //Subscriber client subscriber
@@ -218,7 +219,7 @@ func (s *Subscriber) GetConfigureInformation(dataId, group string, timeout int) 
 		logger.Logger.WithFields(logrus.Fields{
 			"dataId": dataId,
 			"group":  group,
-			"err":    err,
+			"err":    err.Error(),
 		}).Info("get local file config failed")
 	}
 	result, err := s.getConfigureInfomation(dataId, group, timeout, false)
@@ -308,7 +309,7 @@ func (s *Subscriber) PublishConfigureInformation(dataId, group, content string) 
 			logger.Logger.WithFields(logrus.Fields{
 				"dataId":         dataId,
 				"group":          group,
-				"err":            err,
+				"err":            err.Error(),
 				"domainNamePort": domainNamePort,
 				"params":         params,
 			}).Error("Can't NewRequest")
@@ -320,8 +321,8 @@ func (s *Subscriber) PublishConfigureInformation(dataId, group, content string) 
 			logger.Logger.WithFields(logrus.Fields{
 				"dataId": dataId,
 				"group":  group,
-				"err":    err,
-				"req":    req,
+				"err":    err.Error(),
+				"req":    req.Host,
 			}).Error("invoke http failed")
 
 			s.rotateToNextDomain()
@@ -368,7 +369,7 @@ func (s *Subscriber) rotateCheckConfigInfo() {
 			err := s.checkDiamondServerConfigInfo()
 			if err != nil {
 				logger.Logger.WithFields(logrus.Fields{
-					"err": err,
+					"err": err.Error(),
 				}).Error("checkDiamondServerConfigInfo return err")
 			}
 			s.checkSnapshot()
@@ -378,7 +379,7 @@ func (s *Subscriber) rotateCheckConfigInfo() {
 }
 
 func (s *Subscriber) checkDiamondServerConfigInfo() error {
-	updateDataIdGroupPairs, err := s.checkUpdateDataIds(s.diamondConfigure.GetReceiveWaitTime())
+	updateDataIdGroupPairs, err := s.checkUpdateDataIds(s.diamondConfigure.GetListenCheckTimeOut())
 	if err != nil {
 		return err
 	}
@@ -426,7 +427,7 @@ func (s *Subscriber) receiveConfigInfo(cacheData *configinfo.CacheData) {
 		configInfo, err := s.getConfigureInfomation(cacheData.DataId(), cacheData.Group(), s.diamondConfigure.GetReceiveWaitTime(), true)
 		if err != nil {
 			logger.Logger.WithFields(logrus.Fields{
-				"err": err,
+				"err": err.Error(),
 			}).Error("getConfigureInfomation failed")
 			return
 		}
@@ -513,7 +514,7 @@ func (s *Subscriber) getConfigureInfomation(dataId, group string, timeout int, s
 			logger.Logger.WithFields(logrus.Fields{
 				"dataId":         dataId,
 				"group":          group,
-				"err":            err,
+				"err":            err.Error(),
 				"domainNamePort": domainNamePort,
 			}).Error("Can't NewRequest")
 			continue
@@ -536,8 +537,8 @@ func (s *Subscriber) getConfigureInfomation(dataId, group string, timeout int, s
 			logger.Logger.WithFields(logrus.Fields{
 				"dataId": dataId,
 				"group":  group,
-				"err":    err,
-				"req":    req,
+				"err":    err.Error(),
+				"req":    req.Host,
 			}).Error("invoke http failed")
 			s.rotateToNextDomain()
 			continue
@@ -552,8 +553,8 @@ func (s *Subscriber) getConfigureInfomation(dataId, group string, timeout int, s
 			logger.Logger.WithFields(logrus.Fields{
 				"dataId": dataId,
 				"group":  group,
-				"resp":   resp,
-				"req":    req,
+				"status": resp.Status,
+				"req":    req.Host,
 			}).Warn("invoke http can't find config")
 			cacheData.SetMD5("")
 			s.snapshotConfigInfoProcessor.RemoveSnapshot(dataId, group)
@@ -565,8 +566,8 @@ func (s *Subscriber) getConfigureInfomation(dataId, group string, timeout int, s
 			logger.Logger.WithFields(logrus.Fields{
 				"dataId": dataId,
 				"group":  group,
-				"resp":   resp,
-				"req":    req,
+				"status": resp.Status,
+				"req":    req.Host,
 			}).Warn("rotate to default case")
 			s.rotateToNextDomain()
 		}
@@ -707,14 +708,14 @@ func (s *Subscriber) checkLocalConfigInfo() {
 			configInfo, err := s.getLocalConfigureInfomation(cacheData)
 			if err != nil {
 				logger.Logger.WithFields(logrus.Fields{
-					"err": err,
+					"err": err.Error(),
 					"req": cacheData,
 				}).Info("getLocalConfigureInfomation failed")
 				return true
 			}
 			if configInfo != "" {
 				logger.Logger.WithFields(logrus.Fields{
-					"err": err,
+					"err": err.Error(),
 					"req": cacheData,
 				}).Info("getLocalConfigureInfomation success")
 				s.popConfigInfo(cacheData, configInfo)
@@ -759,12 +760,20 @@ func (s *Subscriber) checkUpdateDataIds(timeout int) (*hashset.Set, error) {
 	if probeUpdateString == "" {
 		return nil, errors.New("getProbeUpdateString is empty")
 	}
-	waitTime := 0
-	for 0 == timeout || timeout > waitTime {
-		onceTimeOut := s.getOnceTimeOut(waitTime, timeout)
-		waitTime += onceTimeOut
 
-		client := &http.Client{Timeout: time.Duration(onceTimeOut) * time.Millisecond}
+	retryTimes := 5
+	// 已经尝试过的次数
+	tryCount := 0
+
+	//waitTime := 0
+	for retryTimes > tryCount {
+		//onceTimeOut := s.getOnceTimeOut(waitTime, timeout)
+		//waitTime += onceTimeOut
+
+		tryCount++
+
+		client := &http.Client{
+			Timeout: time.Duration(timeout) * time.Millisecond}
 		pos := atomic.LoadInt64(&s.domainNamePos)
 		domainName, _ := s.diamondConfigure.GetDomainNameList().Get(int(pos))
 		domainNamePort := urlutil.GetURL(domainName.(string), s.diamondConfigure.GetPort(), GetProbeModifyUrl)
@@ -775,19 +784,21 @@ func (s *Subscriber) checkUpdateDataIds(timeout int) (*hashset.Set, error) {
 		if err != nil {
 			logger.Logger.WithFields(logrus.Fields{
 				"probeUpdateString": probeUpdateString,
-				"err":               err,
+				"err":               err.Error(),
 				"domainNamePort":    domainNamePort,
 			}).Error("Can't NewRequest")
 			continue
 		}
 		req.Header.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+		req.Header.Add(longPollingTimeOutHeader, strconv.Itoa(s.diamondConfigure.GetLongPollingTimeOut()))
 		resp, err := client.Do(req)
 		if err != nil {
 			logger.Logger.WithFields(logrus.Fields{
-				"req":  req,
-				"err":  err,
-				"resp": resp,
-			}).Error("client.Do failed")
+				"probeUpdateString": probeUpdateString,
+				"req":               req,
+				"err":               err.Error(),
+				"timeout":           timeout,
+			}).Error("checkUpdateDataIds client.Do failed")
 			continue
 		}
 		statusCode := resp.StatusCode
@@ -800,9 +811,9 @@ func (s *Subscriber) checkUpdateDataIds(timeout int) (*hashset.Set, error) {
 		default:
 			logger.Logger.WithFields(logrus.Fields{
 				"probeUpdateString": probeUpdateString,
-				"resp":              resp,
-				"req":               req,
-			}).Warn("rotate to default case")
+				"statusCode":        statusCode,
+				"req":               req.Host,
+			}).Debug("rotate to default case")
 			s.rotateToNextDomain()
 		}
 		resp.Body.Close()
@@ -892,7 +903,7 @@ func (s *Subscriber) rotateToNextDomain() {
 		domainName, _ := domainNameList.Get(int(atomic.LoadInt64(&s.domainNamePos)))
 		logger.Logger.WithFields(logrus.Fields{
 			"domainName": domainName,
-		}).Error("rotateTo doaminName")
+		}).Debug("rotateTo domainName")
 	}
 }
 
@@ -913,7 +924,7 @@ func (s *Subscriber) saveSnapshot(dataId, group, config string) {
 			logger.Logger.WithFields(logrus.Fields{
 				"dataId": dataId,
 				"group":  group,
-				"err":    err,
+				"err":    err.Error(),
 			}).Error("SaveSnaptshot failed")
 		}
 	}
@@ -960,7 +971,7 @@ func (s *Subscriber) getSnapshotConfiginfomation(dataId, group string) string {
 		logger.Logger.WithFields(logrus.Fields{
 			"dataId": dataId,
 			"group":  group,
-			"err":    err,
+			"err":    err.Error(),
 		}).Error("snapshotConfigInfoProcessor.GetConfigInfomation failed")
 		return ""
 	}
@@ -985,7 +996,7 @@ func convertStringToSet(modifiedDataIdsString string) *hashset.Set {
 	modifiedDataIdsString, err := url.QueryUnescape(modifiedDataIdsString)
 	if err != nil {
 		logger.Logger.WithFields(logrus.Fields{
-			"err":                   err,
+			"err":                   err.Error(),
 			"modifiedDataIdsString": modifiedDataIdsString,
 		}).Error("reader.Read modifiedDataIdsString faield")
 	}
@@ -1030,14 +1041,14 @@ func getContent(resp *http.Response) string {
 		reader, err := gzip.NewReader(resp.Body)
 		if err != nil {
 			logger.Logger.WithFields(logrus.Fields{
-				"err": err,
+				"err": err.Error(),
 			}).Error("unzip failed")
 		} else {
 			for {
 				n, err := reader.Read(buf[:])
 				if err != nil || n == 0 {
 					logger.Logger.WithFields(logrus.Fields{
-						"err": err,
+						"err": err.Error(),
 					}).Error("unzip failed or finished")
 					break
 				}
@@ -1049,7 +1060,7 @@ func getContent(resp *http.Response) string {
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			logger.Logger.WithFields(logrus.Fields{
-				"err": err,
+				"err": err.Error(),
 			}).Error("read resp.Body failed")
 		}
 		content := string(body)

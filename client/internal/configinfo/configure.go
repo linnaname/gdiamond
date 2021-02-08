@@ -17,6 +17,8 @@ type Configure struct {
 	onceTimeout            int //获取对于一个DiamondServer所对应的查询一个DataID对应的配置信息的Timeout时间(毫秒)
 	receiveWaitTime        int // 同步查询一个DataID所花费的时间
 	retrieveDataRetryTimes int //获取数据时的重试次数
+	longPollingTimeout     int
+	listenCheckTimeOut     int
 }
 
 const (
@@ -25,9 +27,15 @@ const (
 	//MaxUint max num of unit type
 	MaxUint = ^uint(0)
 	//PollingIntervalTime seconds
-	PollingIntervalTime = 15
+	PollingIntervalTime = 15 * 4 * 2
 	//DefaultGroup default group
 	DefaultGroup = "DEFAULT_GROUP"
+
+	//LongPollingTimeout
+	LongPollingTimeout = 60 * 1000
+
+	//ListenCheckTimeOut
+	ListenCheckTimeOut = 1.5 * LongPollingTimeout
 )
 
 //NewConfigure filePath need to modified,but not yet
@@ -35,7 +43,7 @@ func NewConfigure() (*Configure, error) {
 	filePath := fileutil.GetCurrentDirectory() + "/gdiamond"
 	err := fileutil.CreateDirIfNecessary(filePath)
 	return &Configure{filePath: filePath, domainNameList: dll.New(), localFirst: false, configServerPort: DefaultPort, port: 1210,
-		onceTimeout: 2000, receiveWaitTime: 2000 * 5, retrieveDataRetryTimes: int(MaxUint>>1) / 10}, err
+		onceTimeout: 2000, receiveWaitTime: 2000 * 5, retrieveDataRetryTimes: int(MaxUint>>1) / 10, longPollingTimeout: LongPollingTimeout, listenCheckTimeOut: ListenCheckTimeOut}, err
 }
 
 //GetFilePath filePath getter,where client store local file
@@ -111,4 +119,14 @@ func (c *Configure) GetConfigServerAddress() string {
 //GetConfigServerPort configServerPort getter
 func (c *Configure) GetConfigServerPort() int {
 	return c.configServerPort
+}
+
+//GetLongPollingTimeOut longPollingTimeout getter
+func (c *Configure) GetLongPollingTimeOut() int {
+	return c.longPollingTimeout
+}
+
+//GetListenCheckTimeOut listenCheckTimeOut getter
+func (c *Configure) GetListenCheckTimeOut() int {
+	return c.listenCheckTimeOut
 }
