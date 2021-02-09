@@ -3,11 +3,22 @@
 gdiamond可以视为淘宝分布式配置管理diamond的Go实现
 
 ## 工程架构 ##
-
+1.分布式配置开源系统选型比较
+2.gdiamond的架构
+3.各个分布式配置系统如何感知配置变更并推送
 
 ## 功能列表 ##
+*配置修改实时生效
 
-## 详细文档 ##
+用户在修改完配置并发布后，客户端能实时（1秒）接收到最新的配置，并通知到应用程序
+
+* 部署简单
+
+作为基础服务，为了提高可用性和降低运维的难度，目前唯一的外部依赖是MySQL，部署非常简单，只要安装好Golang和MySQL就可以跑起来
+
+*统一管理 TODO
+
+提供统一界面集中式管理配置。
 
 ## 快速开始 ##
 
@@ -88,8 +99,8 @@ content := cli.GetConfigAndSetListener(dataId, group, 1000, A{})
 content为配置内容，当然需要程序常驻才可以监听
 
 
-## 性能测试 ##
-
+## bench ##
+性能暂时还不能满足生产环境需求，具体bench可以看[本地bench](https://gdiamond.yuque.com/staff-xkx7zo/twhd01/wltq22)
 
 ## 一点小背景 ##
 
@@ -126,10 +137,11 @@ diamond和[disconf](https://github.com/knightliao/disconf)
 * 配置变更实时感知测试（秒级） done
 * 租户 增加 6
 * daily/pre/production环境增加 7
-* 集群环境性能测试  1
+* 集群环境性能测试  1 done 性能不理想，需要优化
 * mysql连接、gnet连接优化  2
 * namesrv和server优雅关闭 3
 * 用户权限 5
 * 管理页面（宜搭） 4
 * 历史记录，回滚  8
-* 增加fallback机制，在长轮询同时失效时也不会的导致一直无法拉取变更
+* 增加fallback机制，在长轮询同时失效时也不会的导致一直无法拉取变更 9
+* Docker部署 10

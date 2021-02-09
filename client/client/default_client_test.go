@@ -5,6 +5,7 @@ import (
 	"gdiamond/client/listener"
 	"gdiamond/client/subscriber"
 	"github.com/stretchr/testify/assert"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -69,14 +70,14 @@ func TestDefaultClient_GetConfigAndSetListener(t *testing.T) {
 func BenchmarkGetConfig(b *testing.B) {
 	dm := NewClient()
 	for i := 0; i < b.N; i++ {
-		dm.GetConfig(dataId, group, 1000)
+		dm.GetConfig("linna3"+strconv.Itoa(i), group, 1000)
 	}
 }
 
 func BenchmarkPublishConfig(b *testing.B) {
 	dm := NewClient()
 	for i := 0; i < b.N; i++ {
-		dm.PublishConfig("linna3", group, "test publish442221")
+		dm.PublishConfig("linna3"+strconv.Itoa(i), group, "test publish442221"+strconv.Itoa(i))
 	}
 }
 
