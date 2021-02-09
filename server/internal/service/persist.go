@@ -11,6 +11,7 @@ import (
 
 func addConfigInfo(config *model.ConfigInfo) error {
 	stm, err := common.GDBConn.Prepare("INSERT INTO config_info (data_id,group_id,content,md5,gmt_create,gmt_modified) VALUES(?,?,?,?,?,?)")
+	defer stm.Close()
 	if err != nil {
 		return err
 	}
@@ -24,6 +25,7 @@ func addConfigInfo(config *model.ConfigInfo) error {
 
 func updateConfigInfo(config *model.ConfigInfo) error {
 	stm, err := common.GDBConn.Prepare("UPDATE config_info SET content=?,md5=?,gmt_modified=? WHERE data_id=? AND group_id=?")
+	defer stm.Close()
 	if err != nil {
 		return err
 	}
@@ -36,6 +38,7 @@ func updateConfigInfo(config *model.ConfigInfo) error {
 
 func findConfigInfo(dataID, group string) (*model.ConfigInfo, error) {
 	stm, err := common.GDBConn.Prepare("select id,data_id,group_id,content,md5,gmt_modified from config_info where data_id=? and group_id=?")
+	defer stm.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -52,6 +55,7 @@ func findConfigInfo(dataID, group string) (*model.ConfigInfo, error) {
 
 func findConfigInfoByID(id int64) (*model.ConfigInfo, error) {
 	stm, err := common.GDBConn.Prepare("select id,data_id,group_id,content,md5,gmt_modified from config_info where id=?")
+	defer stm.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -128,6 +132,7 @@ func findAllConfigLike(pageNo, pageSize int, dataID, group string) (*model.Page,
 
 func removeConfigInfo(config *model.ConfigInfo) error {
 	stm, err := common.GDBConn.Prepare("DELETE FROM config_info WHERE data_id=? AND group_id=?")
+	defer stm.Close()
 	if err != nil {
 		return err
 	}

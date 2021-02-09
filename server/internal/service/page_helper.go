@@ -15,6 +15,7 @@ func FetchPage(sqlCountRows, sqlFetchRows string, pageNo, pageSize int, args ...
 	}
 
 	stm, err := common.GDBConn.Prepare(sqlCountRows)
+	defer stm.Close()
 	if err != nil {
 		return nil, err
 	}

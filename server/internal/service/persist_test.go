@@ -123,3 +123,9 @@ func (s *_Suite) TestRemoveConfigInfo() {
 func TestSuite(t *testing.T) {
 	suite.Run(t, new(_Suite))
 }
+
+func (s *_Suite) TestPrepare() {
+	stmt, err := common.GDBConn.Prepare("INSERT User set UserName=?,Password=?")
+	assert.NoError(s.T(), err)
+	assert.NotNil(s.T(), stmt)
+}

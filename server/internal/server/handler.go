@@ -184,6 +184,12 @@ func publishConfig(w http.ResponseWriter, r *http.Request) {
 
 		err := service.AddOrUpdate(dataId, group, content)
 		if err != nil {
+			service.Logger.WithFields(logrus.Fields{
+				"content": content,
+				"dataId":  dataId,
+				"group":   group,
+				"err":     err.Error(),
+			}).Error("service.AddOrUpdate failed")
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}

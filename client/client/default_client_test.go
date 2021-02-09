@@ -65,3 +65,27 @@ func TestDefaultClient_GetConfigAndSetListener(t *testing.T) {
 	assert.NotEmpty(t, content)
 	time.Sleep(time.Minute * 20)
 }
+
+func BenchmarkGetConfig(b *testing.B) {
+	dm := NewClient()
+	for i := 0; i < b.N; i++ {
+		dm.GetConfig(dataId, group, 1000)
+	}
+}
+
+func BenchmarkPublishConfig(b *testing.B) {
+	dm := NewClient()
+	for i := 0; i < b.N; i++ {
+		dm.PublishConfig("linna3", group, "test publish442221")
+	}
+}
+
+func BenchmarkParallelGetConfig(b *testing.B) {
+	// 测试一个对象或者函数在多线程的场景下面是否安全
+	dm := NewClient()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			dm.GetConfig(dataId, group, 1000)
+		}
+	})
+}
