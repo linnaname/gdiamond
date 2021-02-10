@@ -1,11 +1,11 @@
 
 ## Not Ready For Production Env ##
-gdiamond可以视为淘宝分布式配置管理diamond的Go实现
+分布式配置管理平台gdiamod
 
 ## 工程架构 ##
-1.分布式配置开源系统选型比较
-2.gdiamond的架构
-3.各个分布式配置系统如何感知配置变更并推送
+1.分布式配置开源系统选型比较 TODO
+2.gdiamond的架构 TODO
+3.各个分布式配置系统如何感知配置变更并推送 TODO
 
 ## 功能列表 ##
 *配置修改实时生效
