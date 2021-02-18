@@ -5,12 +5,12 @@
 ## 工程架构 ##
 1.分布式配置开源系统选型比较 TODO
 
-2.gdiamond的架构 TODO
+2.[gdiamond的架构](https://gdiamond.yuque.com/staff-xkx7zo/twhd01/gm8876)
 
-3.各个分布式配置系统如何感知配置变更并推送 TODO
+3.[各个分布式配置系统如何感知配置变更并推送](https://gdiamond.yuque.com/staff-xkx7zo/twhd01/ezxzqg)
 
 ## 功能列表 ##
-*配置修改实时生效
+* 配置修改实时生效
 
 用户在修改完配置并发布后，客户端能实时（1秒）接收到最新的配置，并通知到应用程序
 
@@ -18,7 +18,7 @@
 
 作为基础服务，为了提高可用性和降低运维的难度，目前唯一的外部依赖是MySQL，部署非常简单，只要安装好Golang和MySQL就可以跑起来
 
-*统一管理 TODO
+* 统一管理 TODO
 
 提供统一界面集中式管理配置。
 
@@ -102,7 +102,9 @@ content为配置内容，当然需要程序常驻才可以监听
 
 
 ## bench ##
-性能暂时还不能满足生产环境需求，具体bench可以看[本地bench](https://gdiamond.yuque.com/staff-xkx7zo/twhd01/wltq22)
+具体bench可以看[本地bench](https://gdiamond.yuque.com/staff-xkx7zo/twhd01/wltq22)
+
+性能暂时还不能满足生产环境需求 ，还需要进行优化
 
 ## 一点小背景 ##
 
@@ -129,6 +131,12 @@ diamond和[disconf](https://github.com/knightliao/disconf)
 
 ## Contributing ##
 虽然这是我自己为了把Golang重新捡起来写的一个轮子，但是还是欢迎感兴趣的小伙参与项目贡献！但Golang的生态确实还不太完善，如果您感兴趣欢迎联系我，也可以额提交PR修复一个bug，或者新建 Issue 讨论新特性或者变更。
+
+备注：
+
+工程组织风格尽量符合[golang-standards/project-layout](https://github.com/golang-standards/project-layout)
+
+代码风格尽量符合[uber-go guide](https://github.com/uber-go/guide)
 
 ## TODO List ##
 * localfile测试和localfile变更监听测试  done
