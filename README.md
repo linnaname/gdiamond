@@ -138,6 +138,8 @@ diamond和[disconf](https://github.com/knightliao/disconf)
 
 代码风格尽量符合[uber-go guide](https://github.com/uber-go/guide)
 
+请写单元测试，核心功能接口请写benchmark
+
 ## TODO List ##
 * localfile测试和localfile变更监听测试  done
 * client 和 server从namesrv获取全量可用server逻辑  done
